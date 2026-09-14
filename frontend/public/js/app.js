@@ -1,7 +1,7 @@
 /* ===== CS 1.6 Server Booster — App Core ===== */
 'use strict';
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = 'https://cs16-server-booster-production.up.railway.app/api';
 
 /* ---- API ---- */
 const api = {
