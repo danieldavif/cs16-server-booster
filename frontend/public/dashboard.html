@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — CS Booster</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="/" class="navbar-logo"><span class="logo-icon">🎮</span>CS Booster</a>
+    <ul class="navbar-nav">
+      <li><a href="/">Home</a></li><li><a href="servers.html">Servers</a></li>
+      <li><a href="ranking.html">Ranking</a></li>
+    </ul>
+    <div class="navbar-actions">
+      <button class="btn-theme" id="themeToggle">☀️</button>
+      <div id="navActions"></div>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <section class="section">
+    <div id="dashContent"><div class="loading-overlay"><div class="spinner"></div></div></div>
+  </section>
+</div>
+
+<!-- Edit Server Modal -->
+<div class="modal-overlay" id="editServerModal">
+  <div class="modal" style="max-width:580px">
+    <div class="modal-header"><h2 class="modal-title">✏️ Edit Server</h2><button class="modal-close" onclick="closeModal('editServerModal')">✕</button></div>
+    <form id="editServerForm">
+      <input type="hidden" id="editServerId">
+      <div class="form-group"><label class="form-label">Name</label><input type="text" id="editName" required maxlength="80"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Country</label>
+          <select id="editCountry"><option value="">—</option>
+            <option value="BR">🇧🇷 Brazil</option><option value="US">🇺🇸 USA</option>
+            <option value="DE">🇩🇪 Germany</option><option value="RU">🇷🇺 Russia</option>
+            <option value="PL">🇵🇱 Poland</option><option value="TR">🇹🇷 Turkey</option>
+            <option value="PT">🇵🇹 Portugal</option><option value="AR">🇦🇷 Argentina</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Mod</label>
+          <select id="editMod">
+            <option>Classic</option><option>Deathmatch</option><option>JailBreak</option>
+            <option>Zombie</option><option>Surf</option><option>Bhop</option>
+            <option>BaseBuilder</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Description</label><textarea id="editDesc" rows="3" maxlength="500"></textarea></div>
+      <div class="form-group"><label class="form-label">Tags</label><input type="text" id="editTags" maxlength="120"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Website</label><input type="url" id="editWebsite"></div>
+        <div class="form-group"><label class="form-label">Discord</label><input type="url" id="editDiscord"></div>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%">💾 Save Changes</button>
+    </form>
+  </div>
+</div>
+
+<!-- Boost Modal -->
+<div class="modal-overlay" id="boostModal">
+  <div class="modal">
+    <div class="modal-header"><h2 class="modal-title">⚡ Boost Server</h2><button class="modal-close" onclick="closeModal('boostModal')">✕</button></div>
+    <input type="hidden" id="boostServerId">
+    <div style="display:flex;flex-direction:column;gap:.75rem" id="boostOptions"></div>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+const API = 'http://localhost:3000/api';
+let profileData = null;
+
+async function loadDashboard() {
+  if (!auth.isLoggedIn()) {
+    document.getElementById('dashContent').innerHTML = `<div class="empty-state"><div class="icon">🔒</div><h3>Login Required</h3><p>Please <a href="#" onclick="openModal('loginModal')">login</a> to access your dashboard.</p></div>`;
+    return;
+  }
+  try {
+    const d = await api.get('/users/profile');
+    profileData = d;
+    renderDashboard(d);
+  } catch(e) {
+    document.getElementById('dashContent').innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><h3>Error loading dashboard</h3></div>`;
+  }
+}
+
+function renderDashboard(d) {
+  document.getElementById('dashContent').innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:2rem">
+      <div>
+        <h1 style="font-size:1.6rem;font-weight:800">👋 Welcome, ${escHtml(d.user.username)}</h1>
+        <p style="color:var(--text-muted);font-size:.9rem">Member since ${timeAgo(d.user.created_at)}</p>
+      </div>
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+        <a href="add-server.html" class="btn btn-primary">➕ Add Server</a>
+        <a href="earn-points.html" class="btn btn-gold">⚡ Earn Points</a>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:2rem">
+      <div class="stat-card"><div class="stat-icon gold">⚡</div><div><div class="stat-value">${d.user.boost_points.toLocaleString()}</div><div class="stat-label">Boost Points</div></div></div>
+      <div class="stat-card"><div class="stat-icon red">🖥️</div><div><div class="stat-value">${d.servers.length}</div><div class="stat-label">My Servers</div></div></div>
+      <div class="stat-card"><div class="stat-icon green">❤️</div><div><div class="stat-value">${d.favorites.length}</div><div class="stat-label">Favorites</div></div></div>
+      <div class="stat-card"><div class="stat-icon blue">📅</div><div><div class="stat-value">${d.user.daily_login_streak}</div><div class="stat-label">Login Streak</div></div></div>
+    </div>
+
+    <!-- Invite -->
+    <div class="card" style="margin-bottom:2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+      <div>
+        <div style="font-weight:700;margin-bottom:.25rem">🎟 Your Invite Code</div>
+        <code style="font-size:1.1rem;color:var(--accent-gold)">${d.user.invite_code}</code>
+        <div style="font-size:.8rem;color:var(--text-muted);margin-top:.25rem">Share and earn +15 pts per friend</div>
+      </div>
+      <button class="btn btn-secondary" onclick="copyToClipboard('${d.user.invite_code}', this)">📋 Copy Code</button>
+    </div>
+
+    <!-- Servers -->
+    <div style="margin-bottom:2rem">
+      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem">🖥️ My Servers</h2>
+      ${d.servers.length ? d.servers.map(s => `
+        <div class="card" style="margin-bottom:.75rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem">
+          <div style="flex:1;min-width:200px">
+            <div style="font-weight:700">${escHtml(s.name)}</div>
+            <div style="display:flex;gap:.5rem;margin-top:.35rem;flex-wrap:wrap">
+              <span class="badge ${s.status==='online'?'badge-online':'badge-offline'}">${s.status}</span>
+              <span class="badge badge-mod">${escHtml(s.mod)}</span>
+              ${s.is_featured?'<span class="badge badge-featured">⭐ Featured</span>':''}
+            </div>
+          </div>
+          <div style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap">
+            <span style="font-size:.85rem;color:var(--text-muted)">📊 ${s.vote_count} votes</span>
+            <span style="font-size:.85rem;color:var(--accent-gold)">⚡ ${s.boost_points}</span>
+            <a href="server.html?s=${s.slug}" class="btn btn-secondary btn-sm">View</a>
+            <button class="btn btn-secondary btn-sm" onclick="openEditModal(${JSON.stringify(s).replace(/"/g,'&quot;')})">✏️</button>
+            <button class="btn btn-gold btn-sm" onclick="openBoostModal('${s.id}')">⚡ Boost</button>
+            <button class="btn btn-sm" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-size:.75rem" onclick="generateBanner('${s.id}','${escHtml(s.name)}','${s.ip}:${s.port}','${s.mod}',${s.vote_count})">🖼 Banner</button>
+          </div>
+        </div>`).join('') : '<div class="empty-state" style="padding:2rem"><div class="icon">🖥️</div><h3>No servers yet</h3><p><a href="add-server.html">Add your first server</a></p></div>'}
+    </div>
+
+    <!-- Favorites -->
+    ${d.favorites.length ? `<div style="margin-bottom:2rem">
+      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem">❤️ Favorite Servers</h2>
+      <div class="server-grid">${d.favorites.map(s=>buildServerCard(s)).join('')}</div>
+    </div>` : ''}
+
+    <!-- Recent Transactions -->
+    <div>
+      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem">⚡ Recent Points Activity</h2>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>Type</th><th>Description</th><th>Amount</th><th>Date</th></tr></thead>
+          <tbody>${(d.transactions||[]).slice(0,10).map(t=>`
+            <tr>
+              <td><span class="badge badge-mod">${t.type}</span></td>
+              <td style="color:var(--text-secondary)">${escHtml(t.description||'')}</td>
+              <td style="font-weight:700;color:${t.amount>0?'var(--accent-green)':'var(--offline)'}">${t.amount>0?'+':''}${t.amount} pts</td>
+              <td style="color:var(--text-muted);font-size:.82rem">${timeAgo(t.created_at)}</td>
+            </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:2rem">No transactions yet</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function openEditModal(s) {
+  document.getElementById('editServerId').value = s.id;
+  document.getElementById('editName').value = s.name;
+  document.getElementById('editCountry').value = s.country || '';
+  document.getElementById('editMod').value = s.mod;
+  document.getElementById('editDesc').value = s.description || '';
+  document.getElementById('editTags').value = s.tags || '';
+  document.getElementById('editWebsite').value = s.website || '';
+  document.getElementById('editDiscord').value = s.discord || '';
+  openModal('editServerModal');
+}
+
+document.getElementById('editServerForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const id = document.getElementById('editServerId').value;
+  try {
+    await api.put(`/servers/${id}`, {
+      name: document.getElementById('editName').value,
+      country: document.getElementById('editCountry').value,
+      mod: document.getElementById('editMod').value,
+      description: document.getElementById('editDesc').value,
+      tags: document.getElementById('editTags').value,
+      website: document.getElementById('editWebsite').value,
+      discord: document.getElementById('editDiscord').value,
+    });
+    closeModal('editServerModal');
+    toast('Server updated!', 'success');
+    loadDashboard();
+  } catch(err) { toast(err.message,'error'); }
+});
+
+async function openBoostModal(serverId) {
+  document.getElementById('boostServerId').value = serverId;
+  try {
+    const plans = await fetch(`${API}/boost/plans`).then(r=>r.json());
+    const userPts = profileData?.user?.boost_points || 0;
+    document.getElementById('boostOptions').innerHTML = Object.entries(plans).map(([key, plan]) => `
+      <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:.5rem">
+        <div>
+          <div style="font-weight:700">${plan.label}</div>
+          <div style="font-size:.82rem;color:var(--text-muted)">${plan.duration_h}h boost${key==='daily_free'?' • Free once per day':''}</div>
+        </div>
+        <button class="btn ${plan.points===0?'btn-success':userPts>=plan.points?'btn-gold':'btn-secondary'} btn-sm"
+          onclick="activateBoost('${serverId}','${key}',${plan.points})"
+          ${plan.points>0&&userPts<plan.points?'disabled title="Not enough points"':''}>
+          ${plan.points===0?'🆓 Activate':'⚡ '+plan.points+' pts'}
+        </button>
+      </div>`).join('');
+  } catch {}
+  openModal('boostModal');
+}
+
+async function activateBoost(serverId, type, cost) {
+  try {
+    const data = await api.post('/boost/activate', { server_id: serverId, boost_type: type });
+    closeModal('boostModal');
+    toast(`Boost activated! ${data.label} until ${new Date(data.expiresAt).toLocaleTimeString()}`, 'success');
+    loadDashboard();
+  } catch(err) { toast(err.message,'error'); }
+}
+
+function generateBanner(id, name, ip, mod, votes) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 468; canvas.height = 80;
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createLinearGradient(0,0,468,0);
+  grad.addColorStop(0,'#0a0a0f'); grad.addColorStop(1,'#1a0505');
+  ctx.fillStyle = grad; ctx.fillRect(0,0,468,80);
+  ctx.strokeStyle='#e02020'; ctx.lineWidth=2; ctx.strokeRect(1,1,466,78);
+  ctx.fillStyle='#e02020'; ctx.font='bold 14px monospace'; ctx.fillText('🎮 '+name, 16, 26);
+  ctx.fillStyle='#888'; ctx.font='12px monospace'; ctx.fillText('IP: '+ip+' | '+mod, 16, 46);
+  ctx.fillStyle='#d4a017'; ctx.font='bold 12px monospace'; ctx.fillText('⚡ '+votes+' votes', 16, 64);
+  ctx.fillStyle='#e02020'; ctx.font='bold 11px sans-serif'; ctx.textAlign='right'; ctx.fillText('CS Booster', 452, 64);
+  const link = document.createElement('a');
+  link.download = `banner-${id}.png`;
+  link.href = canvas.toDataURL();
+  link.click();
+  toast('Banner downloaded!', 'success');
+}
+
+loadDashboard();
+</script>
+</body>
+</html>

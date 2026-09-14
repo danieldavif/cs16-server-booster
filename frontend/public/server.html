@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="pageTitle">Server — CS Booster</title>
+  <meta id="metaDesc" name="description" content="CS 1.6 server details, stats and voting.">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="/" class="navbar-logo"><span class="logo-icon">🎮</span>CS Booster</a>
+    <ul class="navbar-nav">
+      <li><a href="/">Home</a></li><li><a href="servers.html">Servers</a></li>
+      <li><a href="ranking.html">Ranking</a></li><li><a href="faq.html">FAQ</a></li>
+    </ul>
+    <div class="navbar-actions">
+      <button class="btn-theme" id="themeToggle">☀️</button>
+      <div id="navActions"></div>
+    </div>
+    <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="breadcrumb" style="padding-top:1.5rem">
+    <a href="/">Home</a><span class="breadcrumb-sep">›</span>
+    <a href="servers.html">Servers</a><span class="breadcrumb-sep">›</span>
+    <span id="breadName">Loading...</span>
+  </div>
+
+  <div id="serverContent"><div class="loading-overlay"><div class="spinner"></div></div></div>
+</div>
+
+<!-- Report Modal -->
+<div class="modal-overlay" id="reportModal">
+  <div class="modal">
+    <div class="modal-header"><h2 class="modal-title">🚨 Report Server</h2><button class="modal-close" onclick="closeModal('reportModal')">✕</button></div>
+    <form id="reportForm">
+      <div class="form-group"><label class="form-label">Reason</label>
+        <select id="reportReason" required>
+          <option value="">Select reason...</option>
+          <option value="fake_players">Fake Players</option>
+          <option value="spam">Spam / Wrong Info</option>
+          <option value="offline_long">Always Offline</option>
+          <option value="scam">Scam / Malicious</option>
+          <option value="other">Other</option>
+        </select></div>
+      <div class="form-group"><label class="form-label">Description</label><textarea id="reportDesc" rows="3" placeholder="Describe the issue..."></textarea></div>
+      <button type="submit" class="btn btn-danger" style="width:100%">Submit Report</button>
+    </form>
+  </div>
+</div>
+
+<!-- Auth Modals -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal">
+    <div class="modal-header"><h2 class="modal-title">🔑 Login</h2><button class="modal-close" onclick="closeModal('loginModal')">✕</button></div>
+    <form id="loginForm">
+      <div class="form-group"><label class="form-label">Email</label><input type="email" id="loginEmail" required></div>
+      <div class="form-group"><label class="form-label">Password</label><input type="password" id="loginPassword" required></div>
+      <button type="submit" class="btn btn-primary" style="width:100%">Login</button>
+    </form>
+  </div>
+</div>
+<div class="modal-overlay" id="registerModal">
+  <div class="modal">
+    <div class="modal-header"><h2 class="modal-title">📝 Register</h2><button class="modal-close" onclick="closeModal('registerModal')">✕</button></div>
+    <form id="registerForm">
+      <div class="form-group"><label class="form-label">Username</label><input type="text" id="regUsername" required pattern="[a-zA-Z0-9_]{3,20}"></div>
+      <div class="form-group"><label class="form-label">Email</label><input type="email" id="regEmail" required></div>
+      <div class="form-group"><label class="form-label">Password</label><input type="password" id="regPassword" required minlength="6"></div>
+      <div class="form-group"><label class="form-label">Invite Code</label><input type="text" id="regInvite" style="text-transform:uppercase"></div>
+      <button type="submit" class="btn btn-primary" style="width:100%">Create Account</button>
+    </form>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+const API = 'http://localhost:3000/api';
+const slug = new URLSearchParams(location.search).get('s');
+let serverData = null;
+let playerChart = null;
+
+if (!slug) { window.location.href = 'servers.html'; }
+
+async function loadServer() {
+  try {
+    const s = await fetch(`${API}/servers/${slug}`).then(r=>r.json());
+    if (s.error) { document.getElementById('serverContent').innerHTML = '<div class="empty-state"><div class="icon">❌</div><h3>Server not found</h3></div>'; return; }
+    serverData = s;
+    document.getElementById('pageTitle').textContent = `${s.name} — CS Booster`;
+    document.getElementById('metaDesc').content = `${s.name} | ${s.ip}:${s.port} | ${s.mod} | ${s.current_players}/${s.max_players} players`;
+    document.getElementById('breadName').textContent = s.name;
+    renderServer(s);
+    loadVoteStatus();
+  } catch(e) {
+    document.getElementById('serverContent').innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><h3>Cannot reach API</h3></div>';
+  }
+}
+
+function renderServer(s) {
+  const online = s.status === 'online';
+  const fill = s.max_players > 0 ? Math.min((s.current_players/s.max_players)*100,100) : 0;
+  document.getElementById('serverContent').innerHTML = `
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:2rem;padding:1.5rem 0" class="server-detail-grid">
+      <!-- LEFT COLUMN -->
+      <div>
+        <div class="card" style="margin-bottom:1.5rem">
+          <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem;flex-wrap:wrap">
+            <div class="server-logo" style="width:72px;height:72px;font-size:2.5rem">${s.logo ? `<img src="${API}/../uploads/${s.logo}" alt="">` : '🖥️'}</div>
+            <div style="flex:1">
+              <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:.35rem">${escHtml(s.name)}</h1>
+              <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+                <span class="badge ${online?'badge-online':'badge-offline'}"><span class="status-dot ${online?'online':'offline'}"></span>${online?'Online':'Offline'}</span>
+                <span class="badge badge-mod">${escHtml(s.mod)}</span>
+                ${s.is_featured?'<span class="badge badge-featured">⭐ Featured</span>':''}
+                ${s.is_verified?'<span class="badge badge-verified">✔ Verified</span>':''}
+              </div>
+            </div>
+          </div>
+          <!-- IP Row -->
+          <div style="background:var(--bg-secondary);border-radius:var(--radius);padding:.75rem 1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem">
+            <code style="font-size:1.1rem;font-weight:700;letter-spacing:.05em">${escHtml(s.ip)}:${s.port}</code>
+            <div style="display:flex;gap:.5rem">
+              <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('${escHtml(s.ip)}:${s.port}', this)">📋 Copy IP</button>
+              <a href="steam://connect/${s.ip}:${s.port}" class="btn btn-primary btn-sm">🎮 Connect</a>
+            </div>
+          </div>
+          <!-- Stats row -->
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.75rem;margin-bottom:1rem">
+            <div style="background:var(--bg-secondary);border-radius:var(--radius);padding:.75rem;text-align:center">
+              <div style="font-size:1.4rem;font-weight:800;color:var(--accent-green)">${s.current_players}</div>
+              <div style="font-size:.78rem;color:var(--text-muted)">Players</div>
+            </div>
+            <div style="background:var(--bg-secondary);border-radius:var(--radius);padding:.75rem;text-align:center">
+              <div style="font-size:1.4rem;font-weight:800">${s.max_players}</div>
+              <div style="font-size:.78rem;color:var(--text-muted)">Slots</div>
+            </div>
+            <div style="background:var(--bg-secondary);border-radius:var(--radius);padding:.75rem;text-align:center">
+              <div style="font-size:1.4rem;font-weight:800;color:${s.ping>100?'var(--offline)':'var(--accent-green)'}">${s.ping||'—'}ms</div>
+              <div style="font-size:.78rem;color:var(--text-muted)">Ping</div>
+            </div>
+            <div style="background:var(--bg-secondary);border-radius:var(--radius);padding:.75rem;text-align:center">
+              <div style="font-size:1.4rem;font-weight:800;color:var(--accent-gold)">${s.vote_count}</div>
+              <div style="font-size:.78rem;color:var(--text-muted)">Votes</div>
+            </div>
+          </div>
+          <!-- Players bar -->
+          <div style="margin-bottom:.4rem;display:flex;justify-content:space-between;font-size:.85rem;color:var(--text-secondary)"><span>Players</span><span>${s.current_players}/${s.max_players}</span></div>
+          <div class="server-players-bar" style="height:8px"><div class="server-players-fill" style="width:${fill}%"></div></div>
+          ${s.description ? `<p style="margin-top:1rem;color:var(--text-secondary);font-size:.95rem">${escHtml(s.description)}</p>` : ''}
+        </div>
+
+        <!-- Player History Chart -->
+        <div class="card">
+          <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem">📈 Player History (24h)</h3>
+          <div class="chart-container"><canvas id="playerChart" height="120"></canvas></div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div>
+        <!-- Vote -->
+        <div class="card" style="margin-bottom:1rem;text-align:center">
+          <h3 style="font-size:1rem;font-weight:700;margin-bottom:.5rem">🗳 Vote for this server</h3>
+          <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:1rem">Voting boosts this server's ranking and gives you +5 Boost Points!</p>
+          <div style="font-size:2rem;font-weight:800;color:var(--accent-gold);margin-bottom:.75rem" id="voteCount">${s.vote_count}</div>
+          <button id="voteBtn" class="btn btn-primary" style="width:100%" onclick="doVote()">🗳 Vote</button>
+          <div id="voteMsg" style="font-size:.8rem;color:var(--text-muted);margin-top:.5rem"></div>
+        </div>
+
+        <!-- Details -->
+        <div class="card" style="margin-bottom:1rem">
+          <h3 style="font-size:1rem;font-weight:700;margin-bottom:.75rem">ℹ️ Server Info</h3>
+          ${detail('🗺 Map', s.current_map || '—')}
+          ${detail('📍 Country', (countryFlag(s.country)||'🌐') + ' ' + (s.country || '—'))}
+          ${s.city ? detail('🏙 City', s.city) : ''}
+          ${detail('👁 Views', s.view_count.toLocaleString())}
+          ${detail('📅 Added', timeAgo(s.created_at))}
+          ${s.online_since ? detail('⏱ Online Since', timeAgo(s.online_since)) : ''}
+          ${s.last_queried ? detail('🔄 Last Check', timeAgo(s.last_queried)) : ''}
+          ${s.tags ? detail('🏷 Tags', s.tags) : ''}
+        </div>
+
+        <!-- Links -->
+        ${(s.website || s.discord || s.steam_group) ? `<div class="card" style="margin-bottom:1rem">
+          <h3 style="font-size:1rem;font-weight:700;margin-bottom:.75rem">🔗 Links</h3>
+          ${s.website ? `<a href="${escHtml(s.website)}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm" style="width:100%;margin-bottom:.5rem">🌐 Website</a>` : ''}
+          ${s.discord ? `<a href="${escHtml(s.discord)}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm" style="width:100%;margin-bottom:.5rem;color:#7289da">Discord</a>` : ''}
+          ${s.steam_group ? `<a href="${escHtml(s.steam_group)}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm" style="width:100%">Steam Group</a>` : ''}
+        </div>` : ''}
+
+        <!-- Actions -->
+        <div class="card" style="display:flex;flex-direction:column;gap:.5rem">
+          <button class="btn btn-secondary btn-sm" id="favBtn" onclick="toggleFav()">❤️ Favorite</button>
+          <button class="btn btn-secondary btn-sm" onclick="openModal('reportModal')">🚨 Report</button>
+          <button class="btn btn-secondary btn-sm" onclick="refreshServer()">🔄 Refresh Status</button>
+        </div>
+      </div>
+    </div>`;
+
+  // Responsive: stack on mobile
+  const style = document.createElement('style');
+  style.textContent = '@media(max-width:768px){.server-detail-grid{grid-template-columns:1fr!important}}';
+  document.head.appendChild(style);
+
+  renderChart(s.history || []);
+  updateFavBtn(s.isFavorited);
+}
+
+function detail(label, val) {
+  return `<div style="display:flex;justify-content:space-between;padding:.4rem 0;border-bottom:1px solid var(--border);font-size:.88rem"><span style="color:var(--text-muted)">${label}</span><span style="font-weight:600;text-align:right">${val}</span></div>`;
+}
+
+function renderChart(history) {
+  const ctx = document.getElementById('playerChart');
+  if (!ctx) return;
+  const reversed = [...history].reverse();
+  const labels = reversed.map(h => { const d = new Date(h.recorded_at); return `${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`; });
+  const data = reversed.map(h => h.player_count);
+  if (playerChart) playerChart.destroy();
+  playerChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Players',
+        data,
+        borderColor: 'var(--accent-red)',
+        backgroundColor: 'rgba(224,32,32,.15)',
+        borderWidth: 2,
+        fill: true,
+        tension: .4,
+        pointRadius: 0,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#666', maxTicksLimit: 8, font:{size:10} }, grid: { color: '#222' } },
+        y: { ticks: { color: '#666', font:{size:10} }, grid: { color: '#222' }, min: 0, suggestedMax: serverData?.max_players || 32 }
+      }
+    }
+  });
+}
+
+async function loadVoteStatus() {
+  try {
+    const data = await fetch(`${API}/votes/${slug}/status`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')||''}` } }).then(r=>r.json());
+    const btn = document.getElementById('voteBtn');
+    const msg = document.getElementById('voteMsg');
+    if (!data.canVote) {
+      if (btn) { btn.disabled = true; btn.textContent = '✅ Already Voted'; }
+      if (data.nextVoteAt && msg) {
+        const diff = Math.max(0, new Date(data.nextVoteAt) - Date.now());
+        const h = Math.floor(diff/3600000), m = Math.floor((diff%3600000)/60000);
+        msg.textContent = `Next vote in ${h}h ${m}m`;
+      }
+    }
+  } catch {}
+}
+
+async function doVote() {
+  try {
+    const data = await api.post(`/votes/${slug}`);
+    document.getElementById('voteCount').textContent = data.vote_count;
+    document.getElementById('voteBtn').disabled = true;
+    document.getElementById('voteBtn').textContent = '✅ Voted!';
+    document.getElementById('voteMsg').textContent = auth.isLoggedIn() ? '+5 Boost Points earned!' : 'Login to earn +5 Boost Points';
+    toast('Vote registered! Thank you 🎉', 'success');
+  } catch(e) {
+    toast(e.message, 'error');
+    if (e.status === 429) { document.getElementById('voteBtn').disabled = true; document.getElementById('voteBtn').textContent = '✅ Already Voted'; }
+  }
+}
+
+function updateFavBtn(faved) {
+  const btn = document.getElementById('favBtn');
+  if (btn) btn.textContent = faved ? '💔 Unfavorite' : '❤️ Favorite';
+}
+
+async function toggleFav() {
+  if (!auth.isLoggedIn()) { openModal('loginModal'); return; }
+  try {
+    const data = await api.post(`/users/favorites/${slug}`);
+    updateFavBtn(data.favorited);
+    toast(data.favorited ? 'Added to favorites!' : 'Removed from favorites', data.favorited?'success':'info');
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function refreshServer() {
+  toast('Refreshing...', 'info', 1500);
+  try {
+    const d = await fetch(`${API}/servers/${slug}/refresh`, { method: 'POST' }).then(r=>r.json());
+    toast(d.online ? `Online — ${d.players} players` : 'Currently offline', d.online?'success':'error');
+    loadServer();
+  } catch { toast('Refresh failed','error'); }
+}
+
+document.getElementById('reportForm')?.addEventListener('submit', async e => {
+  e.preventDefault();
+  try {
+    await api.post(`/servers/${slug}/report`, { reason: document.getElementById('reportReason').value, description: document.getElementById('reportDesc').value });
+    closeModal('reportModal');
+    toast('Report submitted. Thank you!', 'success');
+  } catch(err) { toast(err.message,'error'); }
+});
+
+loadServer();
+</script>
+</body>
+</html>

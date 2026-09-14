@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Server — CS Booster</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="/" class="navbar-logo"><span class="logo-icon">🎮</span>CS Booster</a>
+    <ul class="navbar-nav">
+      <li><a href="/">Home</a></li><li><a href="servers.html">Servers</a></li>
+      <li><a href="ranking.html">Ranking</a></li>
+    </ul>
+    <div class="navbar-actions">
+      <button class="btn-theme" id="themeToggle">☀️</button>
+      <div id="navActions"></div>
+    </div>
+    <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<div class="container" style="max-width:680px">
+  <section class="section">
+    <div class="breadcrumb"><a href="/">Home</a><span class="breadcrumb-sep">›</span><span>Add Server</span></div>
+    <h1 class="section-title" style="margin-bottom:1.5rem">➕ Add Your CS 1.6 Server</h1>
+    <div style="background:rgba(224,32,32,.08);border:1px solid rgba(224,32,32,.25);border-radius:var(--radius);padding:1rem;margin-bottom:1.5rem;font-size:.9rem;color:var(--text-secondary)">
+      🎮 Your server will be automatically queried to verify it's online. Make sure it's running before submitting!<br>
+      ⚡ Get +20 Boost Points for registering a server.
+    </div>
+
+    <div id="loginWall" style="display:none;text-align:center;padding:3rem 1rem">
+      <div style="font-size:3rem;margin-bottom:1rem">🔒</div>
+      <h3 style="margin-bottom:.5rem">Login Required</h3>
+      <p style="color:var(--text-muted);margin-bottom:1.5rem">You need an account to add a server.</p>
+      <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="openModal('loginModal')">Login</button>
+        <button class="btn btn-secondary" onclick="openModal('registerModal')">Register</button>
+      </div>
+    </div>
+
+    <form id="addServerForm" class="card">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">IP Address *</label>
+          <input type="text" id="sIp" placeholder="e.g. 143.14.179.187" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Port *</label>
+          <input type="number" id="sPort" value="27015" min="1" max="65535" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Server Name *</label>
+        <input type="text" id="sName" placeholder="My Awesome CS Server" required maxlength="80">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Country</label>
+          <select id="sCountry">
+            <option value="">Select country...</option>
+            <option value="BR">🇧🇷 Brazil</option>
+            <option value="US">🇺🇸 United States</option>
+            <option value="DE">🇩🇪 Germany</option>
+            <option value="FR">🇫🇷 France</option>
+            <option value="RU">🇷🇺 Russia</option>
+            <option value="PL">🇵🇱 Poland</option>
+            <option value="TR">🇹🇷 Turkey</option>
+            <option value="PT">🇵🇹 Portugal</option>
+            <option value="AR">🇦🇷 Argentina</option>
+            <option value="MX">🇲🇽 Mexico</option>
+            <option value="CL">🇨🇱 Chile</option>
+            <option value="CO">🇨🇴 Colombia</option>
+            <option value="ES">🇪🇸 Spain</option>
+            <option value="Other">🌐 Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">City / Region</label>
+          <input type="text" id="sCity" placeholder="São Paulo" maxlength="60">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Mod *</label>
+          <select id="sMod" required>
+            <option value="Classic">Classic</option>
+            <option value="Deathmatch">Deathmatch</option>
+            <option value="JailBreak">JailBreak</option>
+            <option value="Zombie">Zombie Plague</option>
+            <option value="Surf">Surf</option>
+            <option value="Bhop">Bhop</option>
+            <option value="Minigames">Minigames</option>
+            <option value="KnifeFight">Knife Fight</option>
+            <option value="GunGame">Gun Game</option>
+            <option value="BaseBuilder">BaseBuilder</option>
+            <option value="Deathrun">Deathrun</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Max Players</label>
+          <input type="number" id="sMaxPlayers" value="32" min="2" max="64">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea id="sDesc" rows="3" placeholder="Tell players about your server, features, rules..." maxlength="500"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tags <span style="color:var(--text-muted)">(comma separated)</span></label>
+        <input type="text" id="sTags" placeholder="zombie, fun, friendly, 24/7" maxlength="120">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Website</label>
+          <input type="url" id="sWebsite" placeholder="https://yoursite.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Discord</label>
+          <input type="url" id="sDiscord" placeholder="https://discord.gg/...">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Steam Group</label>
+        <input type="url" id="sSteam" placeholder="https://steamcommunity.com/groups/...">
+      </div>
+      <div id="addError" style="color:var(--offline);font-size:.88rem;margin-bottom:.75rem;display:none"></div>
+      <button type="submit" class="btn btn-primary btn-lg" style="width:100%" id="addBtn">
+        🚀 Add Server & Verify (+20 pts)
+      </button>
+    </form>
+  </section>
+</div>
+
+<!-- Auth Modals -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal">
+    <div class="modal-header"><h2 class="modal-title">🔑 Login</h2><button class="modal-close" onclick="closeModal('loginModal')">✕</button></div>
+    <form id="loginForm">
+      <div class="form-group"><label class="form-label">Email</label><input type="email" id="loginEmail" required></div>
+      <div class="form-group"><label class="form-label">Password</label><input type="password" id="loginPassword" required></div>
+      <button type="submit" class="btn btn-primary" style="width:100%">Login</button>
+    </form>
+  </div>
+</div>
+<div class="modal-overlay" id="registerModal">
+  <div class="modal">
+    <div class="modal-header"><h2 class="modal-title">📝 Register</h2><button class="modal-close" onclick="closeModal('registerModal')">✕</button></div>
+    <form id="registerForm">
+      <div class="form-group"><label class="form-label">Username</label><input type="text" id="regUsername" required pattern="[a-zA-Z0-9_]{3,20}"></div>
+      <div class="form-group"><label class="form-label">Email</label><input type="email" id="regEmail" required></div>
+      <div class="form-group"><label class="form-label">Password</label><input type="password" id="regPassword" required minlength="6"></div>
+      <div class="form-group"><label class="form-label">Invite Code</label><input type="text" id="regInvite" style="text-transform:uppercase"></div>
+      <button type="submit" class="btn btn-primary" style="width:100%">Create Account</button>
+    </form>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (!auth.isLoggedIn()) {
+    document.getElementById('addServerForm').style.display = 'none';
+    document.getElementById('loginWall').style.display = 'block';
+  }
+});
+
+document.getElementById('addServerForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('addBtn');
+  const errEl = document.getElementById('addError');
+  btn.disabled = true; btn.textContent = '⏳ Validating server...'; errEl.style.display = 'none';
+  try {
+    const data = await api.post('/servers', {
+      ip: document.getElementById('sIp').value.trim(),
+      port: parseInt(document.getElementById('sPort').value),
+      name: document.getElementById('sName').value.trim(),
+      country: document.getElementById('sCountry').value,
+      city: document.getElementById('sCity').value.trim(),
+      mod: document.getElementById('sMod').value,
+      max_players: parseInt(document.getElementById('sMaxPlayers').value),
+      description: document.getElementById('sDesc').value.trim(),
+      tags: document.getElementById('sTags').value.trim(),
+      website: document.getElementById('sWebsite').value.trim(),
+      discord: document.getElementById('sDiscord').value.trim(),
+      steam_group: document.getElementById('sSteam').value.trim(),
+    });
+    toast(`Server added! Status: ${data.status === 'online' ? '🟢 Online' : '🔴 Offline'}`, data.status==='online'?'success':'info');
+    setTimeout(() => window.location.href = `server.html?s=${data.slug}`, 1200);
+  } catch(err) {
+    errEl.textContent = err.message; errEl.style.display = 'block';
+    btn.disabled = false; btn.textContent = '🚀 Add Server & Verify (+20 pts)';
+  }
+});
+</script>
+</body>
+</html>
