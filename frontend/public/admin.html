@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel — CS Booster</title>
+  <title>Painel Admin — CS Booster BR</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <nav class="navbar">
   <div class="navbar-inner">
-    <a href="/" class="navbar-logo"><span class="logo-icon">⚡</span>Admin Panel</a>
+    <a href="/" class="navbar-logo"><span class="logo-icon">⚡</span>Painel Admin</a>
     <ul class="navbar-nav">
       <li><a href="/">← Site</a></li>
       <li><a href="dashboard.html">Dashboard</a></li>
@@ -20,6 +20,91 @@
   </div>
 </nav>
 
+<!-- Modal Editar Servidor -->
+<div id="editServerModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEditModal()">
+  <div class="modal" style="max-width:600px;width:95%">
+    <div class="modal-header">
+      <h3>✏️ Editar Servidor</h3>
+      <button class="modal-close" onclick="closeEditModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editServerId">
+
+      <!-- IP + Auto-preencher -->
+      <div style="margin-bottom:1.2rem">
+        <label class="form-label">IP do Servidor</label>
+        <div style="display:flex;gap:.5rem">
+          <input type="text" id="editIp" class="form-input" placeholder="ex: 143.14.179.187" style="flex:1">
+          <input type="number" id="editPort" class="form-input" placeholder="Porta" value="27015" style="width:100px">
+          <button class="btn btn-secondary btn-sm" onclick="autoFillEdit()" id="autoFillBtn" style="white-space:nowrap">🔍 Verificar</button>
+        </div>
+        <div id="editQueryStatus" style="font-size:.8rem;margin-top:.4rem;color:var(--text-muted)"></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+        <div>
+          <label class="form-label">Nome do Servidor *</label>
+          <input type="text" id="editName" class="form-input" placeholder="Nome do servidor">
+        </div>
+        <div>
+          <label class="form-label">Slots Máx.</label>
+          <input type="number" id="editMaxPlayers" class="form-input" value="32" min="1" max="64">
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+        <div>
+          <label class="form-label">Mod</label>
+          <select id="editMod" class="form-input">
+            <option>Classic</option><option>Deathmatch</option><option>JailBreak</option>
+            <option>Zombie</option><option>Surf</option><option>Minigames</option>
+            <option>Bhop</option><option>KnifeFight</option><option>GunGame</option>
+            <option>ScoutKnives</option><option>BaseBuilder</option><option>Deathrun</option><option>Other</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">País</label>
+          <select id="editCountry" class="form-input">
+            <option value="BR">🇧🇷 Brasil</option>
+            <option value="US">🇺🇸 EUA</option>
+            <option value="PT">🇵🇹 Portugal</option>
+            <option value="AR">🇦🇷 Argentina</option>
+            <option value="DE">🇩🇪 Alemanha</option>
+            <option value="FR">🇫🇷 França</option>
+            <option value="">Outro</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-bottom:1rem">
+        <label class="form-label">Descrição</label>
+        <textarea id="editDescription" class="form-input" rows="3" placeholder="Descreva o servidor..."></textarea>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+        <div>
+          <label class="form-label">Tags</label>
+          <input type="text" id="editTags" class="form-input" placeholder="zombie, vip, 24h">
+        </div>
+        <div>
+          <label class="form-label">Discord</label>
+          <input type="text" id="editDiscord" class="form-input" placeholder="https://discord.gg/...">
+        </div>
+      </div>
+
+      <div style="margin-bottom:1rem">
+        <label class="form-label">Site</label>
+        <input type="text" id="editWebsite" class="form-input" placeholder="https://seusite.com.br">
+      </div>
+
+      <div style="display:flex;gap:.7rem;justify-content:flex-end;padding-top:.5rem">
+        <button class="btn btn-secondary" onclick="closeEditModal()">Cancelar</button>
+        <button class="btn btn-gold" onclick="saveEditServer()">💾 Salvar Alterações</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="container">
   <section class="section">
     <div id="adminContent"><div class="loading-overlay"><div class="spinner"></div></div></div>
@@ -29,10 +114,11 @@
 <script src="js/app.js"></script>
 <script>
 const API = 'https://cs16-server-booster-production.up.railway.app/api';
+let _currentAdminTab = 'servers';
 
 async function checkAdmin() {
   if (!auth.isLoggedIn() || auth.user?.role !== 'admin') {
-    document.getElementById('adminContent').innerHTML = '<div class="empty-state"><div class="icon">🚫</div><h3>Admin access required</h3></div>';
+    document.getElementById('adminContent').innerHTML = '<div class="empty-state"><div class="icon">🚫</div><h3>Acesso de admin necessário</h3></div>';
     return;
   }
   loadAdminStats();
@@ -44,14 +130,12 @@ async function loadAdminStats() {
     document.getElementById('adminContent').innerHTML = `
       <h1 style="font-size:1.5rem;font-weight:800;margin-bottom:1.5rem">⚡ Admin Panel</h1>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:2rem">
-        <div class="stat-card"><div class="stat-icon blue">👤</div><div><div class="stat-value">${stats.users}</div><div class="stat-label">Users</div></div></div>
-        <div class="stat-card"><div class="stat-icon red">🖥️</div><div><div class="stat-value">${stats.servers}</div><div class="stat-label">Servers</div></div></div>
+        <div class="stat-card"><div class="stat-icon blue">👤</div><div><div class="stat-value">${stats.users}</div><div class="stat-label">Usuários</div></div></div>
+        <div class="stat-card"><div class="stat-icon red">🖥️</div><div><div class="stat-value">${stats.servers}</div><div class="stat-label">Servidores</div></div></div>
         <div class="stat-card"><div class="stat-icon green">🟢</div><div><div class="stat-value">${stats.onlineServers}</div><div class="stat-label">Online</div></div></div>
         <div class="stat-card"><div class="stat-icon gold">👥</div><div><div class="stat-value">${stats.onlinePlayers}</div><div class="stat-label">Players</div></div></div>
-        <div class="stat-card"><div class="stat-icon red">🚨</div><div><div class="stat-value" style="color:${stats.pendingReports>0?'var(--offline)':'inherit'}">${stats.pendingReports}</div><div class="stat-label">Reports</div></div></div>
+        <div class="stat-card"><div class="stat-icon red">🚨</div><div><div class="stat-value" style="color:${stats.pendingReports>0?'var(--offline)':'inherit'}">${stats.pendingReports}</div><div class="stat-label">Denúncias</div></div></div>
       </div>
-
-      <!-- Tabs -->
       <div class="tabs" id="adminTabs">
         <button class="tab-btn active" onclick="loadAdminTab('servers')">Servidores</button>
         <button class="tab-btn" onclick="loadAdminTab('users')">Usuários</button>
@@ -59,33 +143,40 @@ async function loadAdminStats() {
         <button class="tab-btn" onclick="loadAdminTab('logs')">Logs</button>
       </div>
       <div id="adminTabContent"><div class="loading-overlay"><div class="spinner"></div></div></div>`;
-
     loadAdminTab('servers');
   } catch(e) {
-    document.getElementById('adminContent').innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><h3>API Error</h3></div>';
+    document.getElementById('adminContent').innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><h3>Erro de API</h3></div>';
   }
 }
 
 async function loadAdminTab(tab) {
   _currentAdminTab = tab;
-  document.querySelectorAll('#adminTabs .tab-btn').forEach((b,i) => b.classList.toggle('active', ['servers','users','reports','logs'][i]===tab));
+  const btns = document.querySelectorAll('#adminTabs .tab-btn');
+  btns.forEach((b,i) => b.classList.toggle('active', ['servers','users','reports','logs'][i]===tab));
   const el = document.getElementById('adminTabContent');
   el.innerHTML = '<div class="loading-overlay"><div class="spinner"></div></div>';
   try {
     if (tab === 'servers') {
-      const data = await api.get('/admin/servers?limit=30');
+      const data = await api.get('/admin/servers?limit=50');
+      if (!data.servers?.length) {
+        el.innerHTML = '<div class="empty-state"><div class="icon">🖥️</div><h3>Nenhum servidor cadastrado</h3></div>';
+        return;
+      }
       el.innerHTML = `<div class="table-wrapper"><table>
         <thead><tr><th>Servidor</th><th>Dono</th><th>Status</th><th>Verificado</th><th>Ações</th></tr></thead>
-        <tbody>${(data.servers||[]).map(s=>`<tr>
-          <td><a href="server.html?s=${s.slug}" target="_blank" style="font-weight:600">${escHtml(s.name)}</a><br><small style="font-family:monospace;color:var(--text-muted)">${s.ip}:${s.port}</small></td>
+        <tbody>${data.servers.map(s=>`<tr>
+          <td><a href="server.html?s=${s.slug}" target="_blank" style="font-weight:600;color:var(--accent-red)">${escHtml(s.name)}</a><br><small style="font-family:monospace;color:var(--text-muted)">${s.ip}:${s.port}</small></td>
           <td>${escHtml(s.owner_username||'—')}</td>
           <td><span class="badge ${s.status==='online'?'badge-online':'badge-offline'}">${s.status==='online'?'Online':'Offline'}</span></td>
           <td>${s.is_verified?'✅':'⏳'}</td>
-          <td style="display:flex;gap:.4rem;flex-wrap:wrap">
+          <td style="display:flex;gap:.35rem;flex-wrap:wrap;align-items:center">
             ${!s.is_verified?`<button class="btn btn-success btn-sm" onclick="adminAction('/admin/servers/${s.id}/approve','PUT',{})">✅ Verificar</button>`:''}
-            ${s.is_active?`<button class="btn btn-danger btn-sm" onclick="adminAction('/admin/servers/${s.id}/block','PUT',{})">🚫 Bloquear</button>`:`<button class="btn btn-success btn-sm" onclick="adminAction('/admin/servers/${s.id}/approve','PUT',{})">✅ Restaurar</button>`}
+            ${s.is_active
+              ?`<button class="btn btn-danger btn-sm" onclick="adminAction('/admin/servers/${s.id}/block','PUT',{})">🚫 Bloquear</button>`
+              :`<button class="btn btn-success btn-sm" onclick="adminAction('/admin/servers/${s.id}/approve','PUT',{})">✅ Restaurar</button>`}
+            <button class="btn btn-secondary btn-sm" onclick="openEditModal(${JSON.stringify(s).replace(/"/g,'&quot;')})">✏️ Editar</button>
             <button class="btn btn-gold btn-sm" onclick="adminFeature('${s.id}')">⭐ Destacar</button>
-            <button class="btn btn-danger btn-sm" style="background:rgba(239,68,68,.2);border:1px solid var(--offline)" onclick="adminDelete('${s.id}','${escHtml(s.name).replace(/'/g,"\\'")}')">🗑 Deletar</button>
+            <button class="btn btn-danger btn-sm" style="background:rgba(239,68,68,.15);border:1px solid var(--offline)" onclick="adminDelete('${s.id}','${escHtml(s.name).replace(/'/g,"\\'")}')">🗑 Deletar</button>
           </td>
         </tr>`).join('')}
         </tbody></table></div>`;
@@ -99,7 +190,9 @@ async function loadAdminTab(tab) {
           <td style="color:var(--accent-gold)">⚡ ${u.boost_points}</td>
           <td>${u.is_banned?'<span class="badge badge-offline">Banido</span>':'<span class="badge badge-online">Ativo</span>'}</td>
           <td style="display:flex;gap:.4rem;flex-wrap:wrap">
-            ${u.is_banned?`<button class="btn btn-success btn-sm" onclick="adminAction('/admin/users/${u.id}/unban','PUT',{})">✅ Desbanir</button>`:`<button class="btn btn-danger btn-sm" onclick="banUser('${u.id}')">🚫 Banir</button>`}
+            ${u.is_banned
+              ?`<button class="btn btn-success btn-sm" onclick="adminAction('/admin/users/${u.id}/unban','PUT',{})">✅ Desbanir</button>`
+              :`<button class="btn btn-danger btn-sm" onclick="banUser('${u.id}')">🚫 Banir</button>`}
           </td>
         </tr>`).join('')}
         </tbody></table></div>`;
@@ -130,14 +223,12 @@ async function loadAdminTab(tab) {
   } catch(e) { el.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><h3>Erro: ${e.message}</h3></div>`; }
 }
 
-let _currentAdminTab = 'servers';
-
 async function adminAction(path, method, body) {
   try {
     await api.request(method, path, body);
     toast('Ação realizada com sucesso!','success');
-    loadAdminStats();
-    setTimeout(() => loadAdminTab(_currentAdminTab), 400);
+    await loadAdminStats();
+    loadAdminTab(_currentAdminTab);
   } catch(e) { toast(e.message,'error'); }
 }
 
@@ -155,10 +246,82 @@ async function adminDelete(id, name) {
   if (!confirm(`⚠️ Deletar permanentemente "${name}"?\n\nEssa ação não pode ser desfeita.`)) return;
   try {
     await api.request('DELETE', `/admin/servers/${id}`, {});
-    toast('Servidor deletado!', 'success');
-    loadAdminStats();
-    setTimeout(() => loadAdminTab(_currentAdminTab), 400);
-  } catch(e) { toast(e.message,'error'); }
+    toast('🗑 Servidor deletado!', 'success');
+    await loadAdminStats();
+    loadAdminTab(_currentAdminTab);
+  } catch(e) { toast('Erro ao deletar: ' + e.message,'error'); }
+}
+
+// ─── Edit Modal ───────────────────────────────────────────────
+function openEditModal(s) {
+  document.getElementById('editServerId').value = s.id;
+  document.getElementById('editIp').value = s.ip || '';
+  document.getElementById('editPort').value = s.port || 27015;
+  document.getElementById('editName').value = s.name || '';
+  document.getElementById('editMaxPlayers').value = s.max_players || 32;
+  document.getElementById('editMod').value = s.mod || 'Classic';
+  document.getElementById('editCountry').value = s.country || 'BR';
+  document.getElementById('editDescription').value = s.description || '';
+  document.getElementById('editTags').value = s.tags || '';
+  document.getElementById('editDiscord').value = s.discord || '';
+  document.getElementById('editWebsite').value = s.website || '';
+  document.getElementById('editQueryStatus').textContent = '';
+  document.getElementById('editServerModal').style.display = 'flex';
+}
+
+function closeEditModal() {
+  document.getElementById('editServerModal').style.display = 'none';
+}
+
+async function autoFillEdit() {
+  const ip = document.getElementById('editIp').value.trim();
+  const port = document.getElementById('editPort').value || 27015;
+  if (!ip) { toast('Digite o IP primeiro', 'error'); return; }
+  const btn = document.getElementById('autoFillBtn');
+  const status = document.getElementById('editQueryStatus');
+  btn.disabled = true; btn.textContent = '⏳ Buscando...';
+  status.style.color = 'var(--text-muted)'; status.textContent = 'Consultando servidor...';
+  try {
+    const data = await fetch(`${API}/servers/check?ip=${encodeURIComponent(ip)}&port=${port}`).then(r=>r.json());
+    if (data.online) {
+      if (data.name) document.getElementById('editName').value = data.name;
+      if (data.maxPlayers) document.getElementById('editMaxPlayers').value = data.maxPlayers;
+      if (data.map) {
+        const tags = document.getElementById('editTags').value;
+        if (!tags.includes(data.map)) document.getElementById('editTags').value = tags ? `${tags}, ${data.map}` : data.map;
+      }
+      status.style.color = 'var(--online)';
+      status.textContent = `✅ Online — ${data.players||0}/${data.maxPlayers||0} players • Mapa: ${data.map||'?'} • Ping: ${data.ping||'?'}ms`;
+    } else {
+      status.style.color = 'var(--offline)';
+      status.textContent = '⚠️ Servidor offline ou inacessível. Você ainda pode editar manualmente.';
+    }
+  } catch(e) {
+    status.style.color = 'var(--offline)';
+    status.textContent = 'Erro ao consultar: ' + e.message;
+  }
+  btn.disabled = false; btn.textContent = '🔍 Verificar';
+}
+
+async function saveEditServer() {
+  const id = document.getElementById('editServerId').value;
+  const body = {
+    name: document.getElementById('editName').value.trim(),
+    description: document.getElementById('editDescription').value.trim(),
+    country: document.getElementById('editCountry').value,
+    mod: document.getElementById('editMod').value,
+    max_players: parseInt(document.getElementById('editMaxPlayers').value) || 32,
+    tags: document.getElementById('editTags').value.trim(),
+    discord: document.getElementById('editDiscord').value.trim(),
+    website: document.getElementById('editWebsite').value.trim(),
+  };
+  if (!body.name) { toast('Nome é obrigatório', 'error'); return; }
+  try {
+    await api.request('PUT', `/servers/${id}`, body);
+    toast('✅ Servidor atualizado!', 'success');
+    closeEditModal();
+    loadAdminTab(_currentAdminTab);
+  } catch(e) { toast('Erro ao salvar: ' + e.message, 'error'); }
 }
 
 checkAdmin();
