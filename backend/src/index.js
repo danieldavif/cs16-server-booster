@@ -23,11 +23,6 @@ require('./models/db');
       db.prepare('INSERT INTO users (id, username, email, password, role, invite_code, boost_points) VALUES (?,?,?,?,?,?,9999)')
         .run(id, 'admin', email, hash, 'admin', 'ADMIN1');
       console.log(`[Auto-seed] Admin criado: ${email}`);
-      // Seed demo server
-      const sid = uuidv4();
-      db.prepare(`INSERT OR IGNORE INTO servers (id, owner_id, name, ip, port, slug, description, country, mod, max_players, vote_count, boost_points, is_featured, is_verified, status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-        .run(sid, id, 'CS WaRzOnE Server', '143.14.179.187', 27015, 'cs-warzone-server', 'Servidor oficial CS WaRzOnE.', 'BR', 'BaseBuilder', 32, 0, 100, 1, 1, 'checking');
-      console.log('[Auto-seed] Servidor demo criado.');
     }
   } catch(e) { console.error('[Auto-seed] Erro:', e.message); }
 })();
