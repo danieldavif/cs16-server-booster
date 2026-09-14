@@ -58,9 +58,9 @@ router.get('/tasks', authMiddleware, (req, res) => {
 
   res.json({
     tasks: [
-      { id: 'daily_login', label: 'Daily Login', points: 10, done: !canClaimDaily },
-      { id: 'vote_server', label: 'Vote for a Server', points: 5, done: votedToday },
-      { id: 'add_server', label: 'Register a Server', points: 20, done: hasServer },
+      { id: 'daily_login', label: 'Login Diário', points: 10, done: !canClaimDaily },
+      { id: 'vote_server', label: 'Votar em um Servidor', points: 5, done: votedToday },
+      { id: 'add_server', label: 'Cadastrar um Servidor', points: 20, done: hasServer },
     ]
   });
 });

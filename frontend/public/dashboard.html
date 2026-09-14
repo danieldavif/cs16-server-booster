@@ -30,18 +30,18 @@
 <!-- Edit Server Modal -->
 <div class="modal-overlay" id="editServerModal">
   <div class="modal" style="max-width:580px">
-    <div class="modal-header"><h2 class="modal-title">✏️ Edit Server</h2><button class="modal-close" onclick="closeModal('editServerModal')">✕</button></div>
+    <div class="modal-header"><h2 class="modal-title">✏️ Editar Servidor</h2><button class="modal-close" onclick="closeModal('editServerModal')">✕</button></div>
     <form id="editServerForm">
       <input type="hidden" id="editServerId">
-      <div class="form-group"><label class="form-label">Name</label><input type="text" id="editName" required maxlength="80"></div>
+      <div class="form-group"><label class="form-label">Nome</label><input type="text" id="editName" required maxlength="80"></div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Country</label>
+        <div class="form-group"><label class="form-label">País</label>
           <select id="editCountry"><option value="">—</option>
-            <option value="BR">🇧🇷 Brazil</option><option value="US">🇺🇸 USA</option>
-            <option value="DE">🇩🇪 Germany</option><option value="RU">🇷🇺 Russia</option>
-            <option value="PL">🇵🇱 Poland</option><option value="TR">🇹🇷 Turkey</option>
+            <option value="BR">🇧🇷 Brasil</option><option value="US">🇺🇸 EUA</option>
+            <option value="DE">🇩🇪 Alemanha</option><option value="RU">🇷🇺 Rússia</option>
+            <option value="PL">🇵🇱 Polônia</option><option value="TR">🇹🇷 Turquia</option>
             <option value="PT">🇵🇹 Portugal</option><option value="AR">🇦🇷 Argentina</option>
-            <option value="Other">Other</option>
+            <option value="Other">Outro</option>
           </select>
         </div>
         <div class="form-group"><label class="form-label">Mod</label>
@@ -52,13 +52,13 @@
           </select>
         </div>
       </div>
-      <div class="form-group"><label class="form-label">Description</label><textarea id="editDesc" rows="3" maxlength="500"></textarea></div>
+      <div class="form-group"><label class="form-label">Descrição</label><textarea id="editDesc" rows="3" maxlength="500"></textarea></div>
       <div class="form-group"><label class="form-label">Tags</label><input type="text" id="editTags" maxlength="120"></div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Website</label><input type="url" id="editWebsite"></div>
+        <div class="form-group"><label class="form-label">Site</label><input type="url" id="editWebsite"></div>
         <div class="form-group"><label class="form-label">Discord</label><input type="url" id="editDiscord"></div>
       </div>
-      <button type="submit" class="btn btn-primary" style="width:100%">💾 Save Changes</button>
+      <button type="submit" class="btn btn-primary" style="width:100%">💾 Salvar Alterações</button>
     </form>
   </div>
 </div>
@@ -66,7 +66,7 @@
 <!-- Boost Modal -->
 <div class="modal-overlay" id="boostModal">
   <div class="modal">
-    <div class="modal-header"><h2 class="modal-title">⚡ Boost Server</h2><button class="modal-close" onclick="closeModal('boostModal')">✕</button></div>
+    <div class="modal-header"><h2 class="modal-title">⚡ Boost do Servidor</h2><button class="modal-close" onclick="closeModal('boostModal')">✕</button></div>
     <input type="hidden" id="boostServerId">
     <div style="display:flex;flex-direction:column;gap:.75rem" id="boostOptions"></div>
   </div>
@@ -87,7 +87,13 @@ async function loadDashboard() {
     profileData = d;
     renderDashboard(d);
   } catch(e) {
-    document.getElementById('dashContent').innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><h3>Error loading dashboard</h3></div>`;
+    if (e.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      document.getElementById('dashContent').innerHTML = `<div class="empty-state"><div class="icon">🔒</div><h3>Sessão expirada</h3><p style="margin-bottom:1rem;color:var(--text-muted)">Sua sessão expirou. Faça login novamente.</p><button class="btn btn-primary" onclick="openModal('loginModal')">Entrar novamente</button></div>`;
+    } else {
+      document.getElementById('dashContent').innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><h3>Erro ao carregar painel</h3><p><button class="btn btn-secondary btn-sm" onclick="loadDashboard()">Tentar novamente</button></p></div>`;
+    }
   }
 }
 
@@ -95,76 +101,71 @@ function renderDashboard(d) {
   document.getElementById('dashContent').innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:2rem">
       <div>
-        <h1 style="font-size:1.6rem;font-weight:800">👋 Welcome, ${escHtml(d.user.username)}</h1>
-        <p style="color:var(--text-muted);font-size:.9rem">Member since ${timeAgo(d.user.created_at)}</p>
+        <h1 style="font-size:1.6rem;font-weight:800">👋 Olá, ${escHtml(d.user.username)}!</h1>
+        <p style="color:var(--text-muted);font-size:.88rem">Membro desde ${timeAgo(d.user.created_at)}</p>
       </div>
       <div style="display:flex;gap:.75rem;flex-wrap:wrap">
-        <a href="add-server.html" class="btn btn-primary">➕ Add Server</a>
-        <a href="earn-points.html" class="btn btn-gold">⚡ Earn Points</a>
+        <a href="add-server.html" class="btn btn-primary">➕ Adicionar Servidor</a>
+        <a href="earn-points.html" class="btn btn-gold">⚡ Ganhar Pontos</a>
       </div>
     </div>
 
-    <!-- Stats row -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:2rem">
-      <div class="stat-card"><div class="stat-icon gold">⚡</div><div><div class="stat-value">${d.user.boost_points.toLocaleString()}</div><div class="stat-label">Boost Points</div></div></div>
-      <div class="stat-card"><div class="stat-icon red">🖥️</div><div><div class="stat-value">${d.servers.length}</div><div class="stat-label">My Servers</div></div></div>
-      <div class="stat-card"><div class="stat-icon green">❤️</div><div><div class="stat-value">${d.favorites.length}</div><div class="stat-label">Favorites</div></div></div>
-      <div class="stat-card"><div class="stat-icon blue">📅</div><div><div class="stat-value">${d.user.daily_login_streak}</div><div class="stat-label">Login Streak</div></div></div>
+      <div class="stat-card"><div class="stat-icon gold">⚡</div><div><div class="stat-value">${d.user.boost_points.toLocaleString('pt-BR')}</div><div class="stat-label">Boost Points</div></div></div>
+      <div class="stat-card"><div class="stat-icon red">🖥️</div><div><div class="stat-value">${d.servers.length}</div><div class="stat-label">Meus Servidores</div></div></div>
+      <div class="stat-card"><div class="stat-icon green">❤️</div><div><div class="stat-value">${d.favorites.length}</div><div class="stat-label">Favoritos</div></div></div>
+      <div class="stat-card"><div class="stat-icon blue">📅</div><div><div class="stat-value">${d.user.daily_login_streak}</div><div class="stat-label">Streak de Login</div></div></div>
     </div>
 
-    <!-- Invite -->
     <div class="card" style="margin-bottom:2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
       <div>
-        <div style="font-weight:700;margin-bottom:.25rem">🎟 Your Invite Code</div>
-        <code style="font-size:1.1rem;color:var(--accent-gold)">${d.user.invite_code}</code>
-        <div style="font-size:.8rem;color:var(--text-muted);margin-top:.25rem">Share and earn +15 pts per friend</div>
+        <div style="font-weight:700;margin-bottom:.25rem">🎟 Seu Código de Convite</div>
+        <code style="font-size:1.1rem;color:var(--accent-gold);letter-spacing:.1em">${d.user.invite_code}</code>
+        <div style="font-size:.78rem;color:var(--text-muted);margin-top:.25rem">Compartilhe e ganhe +15 pts por amigo</div>
       </div>
-      <button class="btn btn-secondary" onclick="copyToClipboard('${d.user.invite_code}', this)">📋 Copy Code</button>
+      <button class="btn btn-secondary" onclick="copyToClipboard('${d.user.invite_code}', this)">📋 Copiar Código</button>
     </div>
 
-    <!-- Servers -->
     <div style="margin-bottom:2rem">
-      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem">🖥️ My Servers</h2>
+      <h2 style="font-size:1.1rem;font-weight:800;margin-bottom:1rem">🖥️ Meus Servidores</h2>
       ${d.servers.length ? d.servers.map(s => `
         <div class="card" style="margin-bottom:.75rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem">
           <div style="flex:1;min-width:200px">
             <div style="font-weight:700">${escHtml(s.name)}</div>
             <div style="display:flex;gap:.5rem;margin-top:.35rem;flex-wrap:wrap">
-              <span class="badge ${s.status==='online'?'badge-online':'badge-offline'}">${s.status}</span>
+              <span class="badge ${s.status==='online'?'badge-online':'badge-offline'}">${s.status==='online'?'🟢 Online':'🔴 Offline'}</span>
               <span class="badge badge-mod">${escHtml(s.mod)}</span>
-              ${s.is_featured?'<span class="badge badge-featured">⭐ Featured</span>':''}
+              ${s.is_featured?'<span class="badge badge-featured">⭐ Destaque</span>':''}
             </div>
           </div>
           <div style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap">
-            <span style="font-size:.85rem;color:var(--text-muted)">📊 ${s.vote_count} votes</span>
-            <span style="font-size:.85rem;color:var(--accent-gold)">⚡ ${s.boost_points}</span>
-            <a href="server.html?s=${s.slug}" class="btn btn-secondary btn-sm">View</a>
-            <button class="btn btn-secondary btn-sm" onclick="openEditModal(${JSON.stringify(s).replace(/"/g,'&quot;')})">✏️</button>
+            <span style="font-size:.82rem;color:var(--text-muted)">📊 ${s.vote_count} votos</span>
+            <span style="font-size:.82rem;color:var(--accent-gold)">⚡ ${s.boost_points}</span>
+            <a href="server.html?s=${s.slug}" class="btn btn-secondary btn-sm">Ver</a>
+            <button class="btn btn-secondary btn-sm" onclick="openEditModal(${JSON.stringify(s).replace(/"/g,'&quot;')})">✏️ Editar</button>
             <button class="btn btn-gold btn-sm" onclick="openBoostModal('${s.id}')">⚡ Boost</button>
             <button class="btn btn-sm" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-size:.75rem" onclick="generateBanner('${s.id}','${escHtml(s.name)}','${s.ip}:${s.port}','${s.mod}',${s.vote_count})">🖼 Banner</button>
           </div>
-        </div>`).join('') : '<div class="empty-state" style="padding:2rem"><div class="icon">🖥️</div><h3>No servers yet</h3><p><a href="add-server.html">Add your first server</a></p></div>'}
+        </div>`).join('') : `<div class="empty-state" style="padding:2rem"><div class="icon">🖥️</div><h3>Nenhum servidor ainda</h3><p><a href="add-server.html">Adicione seu primeiro servidor</a></p></div>`}
     </div>
 
-    <!-- Favorites -->
     ${d.favorites.length ? `<div style="margin-bottom:2rem">
-      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem">❤️ Favorite Servers</h2>
+      <h2 style="font-size:1.1rem;font-weight:800;margin-bottom:1rem">❤️ Servidores Favoritos</h2>
       <div class="server-grid">${d.favorites.map(s=>buildServerCard(s)).join('')}</div>
     </div>` : ''}
 
-    <!-- Recent Transactions -->
     <div>
-      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem">⚡ Recent Points Activity</h2>
+      <h2 style="font-size:1.1rem;font-weight:800;margin-bottom:1rem">⚡ Histórico de Pontos</h2>
       <div class="table-wrapper">
         <table>
-          <thead><tr><th>Type</th><th>Description</th><th>Amount</th><th>Date</th></tr></thead>
+          <thead><tr><th>Tipo</th><th>Descrição</th><th>Pontos</th><th>Data</th></tr></thead>
           <tbody>${(d.transactions||[]).slice(0,10).map(t=>`
             <tr>
-              <td><span class="badge badge-mod">${t.type}</span></td>
+              <td><span class="badge badge-mod">${escHtml(t.type)}</span></td>
               <td style="color:var(--text-secondary)">${escHtml(t.description||'')}</td>
-              <td style="font-weight:700;color:${t.amount>0?'var(--accent-green)':'var(--offline)'}">${t.amount>0?'+':''}${t.amount} pts</td>
-              <td style="color:var(--text-muted);font-size:.82rem">${timeAgo(t.created_at)}</td>
-            </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:2rem">No transactions yet</td></tr>'}
+              <td style="font-weight:800;color:${t.amount>0?'var(--accent-green)':'var(--offline)'}">${t.amount>0?'+':''}${t.amount} pts</td>
+              <td style="color:var(--text-muted);font-size:.8rem">${timeAgo(t.created_at)}</td>
+            </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:2rem">Nenhuma transação ainda</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -197,7 +198,7 @@ document.getElementById('editServerForm').addEventListener('submit', async e => 
       discord: document.getElementById('editDiscord').value,
     });
     closeModal('editServerModal');
-    toast('Server updated!', 'success');
+    toast('Servidor atualizado!', 'success');
     loadDashboard();
   } catch(err) { toast(err.message,'error'); }
 });
@@ -211,12 +212,12 @@ async function openBoostModal(serverId) {
       <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:.5rem">
         <div>
           <div style="font-weight:700">${plan.label}</div>
-          <div style="font-size:.82rem;color:var(--text-muted)">${plan.duration_h}h boost${key==='daily_free'?' • Free once per day':''}</div>
+          <div style="font-size:.82rem;color:var(--text-muted)">${plan.duration_h}h de boost${key==='daily_free'?' • Grátis uma vez por dia':''}</div>
         </div>
         <button class="btn ${plan.points===0?'btn-success':userPts>=plan.points?'btn-gold':'btn-secondary'} btn-sm"
           onclick="activateBoost('${serverId}','${key}',${plan.points})"
-          ${plan.points>0&&userPts<plan.points?'disabled title="Not enough points"':''}>
-          ${plan.points===0?'🆓 Activate':'⚡ '+plan.points+' pts'}
+          ${plan.points>0&&userPts<plan.points?'disabled title="Pontos insuficientes"':''}>
+          ${plan.points===0?'🆓 Ativar Grátis':'⚡ '+plan.points+' pts'}
         </button>
       </div>`).join('');
   } catch {}
