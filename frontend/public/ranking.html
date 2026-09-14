@@ -1,17 +1,19 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Server Ranking — CS Booster</title>
-  <meta name="description" content="Top CS 1.6 servers ranking — most voted, most players, best ping.">
+  <title>Ranking Servidores CS 1.6 — Top 100 CS Booster BR</title>
+  <meta name="description" content="Ranking dos melhores servidores Counter-Strike 1.6. Top mais votados, mais jogadores, melhor ping. Vote e suba no ranking!">
+  <meta name="keywords" content="ranking servidores cs 1.6, top servidores counter-strike, melhores servidores cs brasil, top zombie plague server">
+  <link rel="canonical" href="https://erenzp-booster.netlify.app/ranking.html">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <nav class="navbar">
   <div class="navbar-inner">
-    <a href="/" class="navbar-logo"><span class="logo-icon">🎮</span>CS Booster</a>
+    <a href="/" class="navbar-logo"><span class="logo-icon">🎮</span>CS Booster BR</a>
     <ul class="navbar-nav">
-      <li><a href="/">Home</a></li><li><a href="servers.html">Servers</a></li>
+      <li><a href="/">Início</a></li><li><a href="servers.html">Servidores</a></li>
       <li><a href="ranking.html" class="active">Ranking</a></li>
     </ul>
     <div class="navbar-actions">
@@ -25,37 +27,35 @@
 <div class="container">
   <section class="section">
     <div class="section-header">
-      <h1 class="section-title">🏆 Server Ranking</h1>
+      <h1 class="section-title">🏆 Ranking de Servidores CS 1.6</h1>
     </div>
 
-    <!-- Tabs -->
     <div class="tabs" id="rankTabs">
-      <button class="tab-btn active" data-type="votes">Most Voted</button>
-      <button class="tab-btn" data-type="players">Most Players</button>
-      <button class="tab-btn" data-type="ping">Best Ping</button>
-      <button class="tab-btn" data-type="popular">Most Viewed</button>
-      <button class="tab-btn" data-type="newest">New Servers</button>
-      <button class="tab-btn" data-type="featured">Featured</button>
+      <button class="tab-btn active" data-type="votes">Mais Votados</button>
+      <button class="tab-btn" data-type="players">Mais Jogadores</button>
+      <button class="tab-btn" data-type="ping">Melhor Ping</button>
+      <button class="tab-btn" data-type="popular">Mais Vistos</button>
+      <button class="tab-btn" data-type="newest">Novos</button>
+      <button class="tab-btn" data-type="featured">Destaque</button>
     </div>
 
-    <!-- Filters -->
     <div class="filter-bar" style="margin-top:0">
-      <select id="fCountry"><option value="">All Countries</option></select>
-      <select id="fMod"><option value="">All Mods</option>
+      <select id="fCountry"><option value="">Todos os Países</option></select>
+      <select id="fMod"><option value="">Todos os Mods</option>
         <option>Classic</option><option>Deathmatch</option><option>JailBreak</option>
         <option>Zombie</option><option>Surf</option><option>Bhop</option>
         <option>BaseBuilder</option><option>Other</option>
       </select>
-      <span id="rankCount" style="color:var(--text-muted);font-size:.88rem;margin-left:auto"></span>
+      <span id="rankCount" style="color:var(--text-muted);font-size:.85rem;margin-left:auto"></span>
     </div>
 
     <div class="table-wrapper">
       <table>
-        <thead><tr><th>#</th><th>Server</th><th>Mod</th><th>Country</th><th>Players</th><th>Votes</th><th>Ping</th><th>Status</th><th></th></tr></thead>
+        <thead><tr><th>#</th><th>Servidor</th><th>Mod</th><th>País</th><th>Jogadores</th><th>Votos</th><th>Ping</th><th>Status</th><th></th></tr></thead>
         <tbody id="rankTable"><tr><td colspan="9" class="loading-overlay"><div class="spinner"></div></td></tr></tbody>
       </table>
     </div>
-    <div style="display:flex;justify-content:center;gap:.5rem;margin-top:1.5rem" id="rankPagination"></div>
+    <div style="display:flex;justify-content:center;gap:.5rem;margin-top:1.5rem;flex-wrap:wrap" id="rankPagination"></div>
   </section>
 </div>
 
@@ -92,12 +92,12 @@ async function loadRanking() {
         <td style="color:var(--accent-gold);font-weight:700">📊 ${s.vote_count}</td>
         <td style="color:${s.ping&&s.ping<100?'var(--accent-green)':s.ping>200?'var(--offline)':'var(--text-primary)'}">${s.ping||'—'}ms</td>
         <td><span class="badge ${online?'badge-online':'badge-offline'}">${online?'🟢 Online':'🔴 Offline'}</span></td>
-        <td><a href="server.html?s=${s.slug}" class="btn btn-primary btn-sm">View</a></td>
+        <td><a href="server.html?s=${s.slug}" class="btn btn-primary btn-sm">Ver</a></td>
       </tr>`;
-    }).join('') : '<tr><td colspan="9" style="text-align:center;padding:3rem;color:var(--text-muted)">No servers found</td></tr>';
+    }).join('') : '<tr><td colspan="9" style="text-align:center;padding:3rem;color:var(--text-muted)">Nenhum servidor encontrado</td></tr>';
     buildPagination(data.total, 50, currentPage);
   } catch(e) {
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--offline)">Cannot reach API. Start backend server.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--offline)">API indisponível. Aguarde um momento.</td></tr>';
   }
 }
 
@@ -106,9 +106,9 @@ function buildPagination(total, limit, page) {
   const el = document.getElementById('rankPagination');
   if (totalPages <= 1) { el.innerHTML = ''; return; }
   let html = '';
-  if (page > 1) html += `<button class="btn btn-secondary btn-sm" onclick="goPage(${page-1})">← Prev</button>`;
+  if (page > 1) html += `<button class="btn btn-secondary btn-sm" onclick="goPage(${page-1})">← Anterior</button>`;
   for (let i=Math.max(1,page-1); i<=Math.min(totalPages,page+2); i++) html += `<button class="btn ${i===page?'btn-primary':'btn-secondary'} btn-sm" onclick="goPage(${i})">${i}</button>`;
-  if (page < totalPages) html += `<button class="btn btn-secondary btn-sm" onclick="goPage(${page+1})">Next →</button>`;
+  if (page < totalPages) html += `<button class="btn btn-secondary btn-sm" onclick="goPage(${page+1})">Próxima →</button>`;
   el.innerHTML = html;
 }
 

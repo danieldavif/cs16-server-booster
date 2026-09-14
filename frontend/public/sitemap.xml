@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://your-domain.com/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
-  <url><loc>https://your-domain.com/servers.html</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://your-domain.com/ranking.html</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://your-domain.com/add-server.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://your-domain.com/earn-points.html</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://your-domain.com/faq.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://erenzp-booster.netlify.app/</loc><changefreq>hourly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://erenzp-booster.netlify.app/servers.html</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://erenzp-booster.netlify.app/ranking.html</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://erenzp-booster.netlify.app/add-server.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://erenzp-booster.netlify.app/earn-points.html</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://erenzp-booster.netlify.app/faq.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
 </urlset>

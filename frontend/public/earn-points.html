@@ -1,17 +1,19 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Earn Boost Points — CS Booster</title>
+  <title>Ganhar Boost Points — CS Booster BR</title>
+  <meta name="description" content="Ganhe Boost Points grátis e impulsione seu servidor CS 1.6 gratuitamente. Login diário, votos e muito mais!">
+  <link rel="canonical" href="https://erenzp-booster.netlify.app/earn-points.html">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <nav class="navbar">
   <div class="navbar-inner">
-    <a href="/" class="navbar-logo"><span class="logo-icon">🎮</span>CS Booster</a>
+    <a href="/" class="navbar-logo"><span class="logo-icon">🎮</span>CS Booster BR</a>
     <ul class="navbar-nav">
-      <li><a href="/">Home</a></li><li><a href="servers.html">Servers</a></li>
-      <li><a href="earn-points.html" class="active">Earn Points</a></li>
+      <li><a href="/">Início</a></li><li><a href="servers.html">Servidores</a></li>
+      <li><a href="earn-points.html" class="active">Ganhar Pontos</a></li>
     </ul>
     <div class="navbar-actions">
       <button class="btn-theme" id="themeToggle">☀️</button>
@@ -20,38 +22,53 @@
   </div>
 </nav>
 
-<div class="container" style="max-width:820px">
+<div class="container" style="max-width:900px">
   <section class="section">
-    <h1 class="section-title" style="margin-bottom:.5rem">⚡ Earn Boost Points</h1>
-    <p style="color:var(--text-muted);margin-bottom:2rem">Use Boost Points to feature your server and climb the ranking!</p>
+    <h1 class="section-title" style="margin-bottom:.5rem">⚡ Ganhar Boost Points</h1>
+    <p style="color:var(--text-muted);margin-bottom:2rem">Use Boost Points para colocar seu servidor em destaque e subir no ranking!</p>
 
-    <!-- Balance -->
-    <div class="card" style="margin-bottom:2rem;text-align:center;background:linear-gradient(135deg,#1a0505,#0a0a15)">
-      <div style="font-size:3rem;font-weight:900;color:var(--accent-gold)" id="pointBalance">—</div>
-      <div style="color:var(--text-muted)">Your Boost Points balance</div>
+    <!-- BOOST GRÁTIS DESTAQUE -->
+    <div style="background:linear-gradient(135deg,rgba(34,197,94,.08),rgba(34,197,94,.02));border:2px solid rgba(34,197,94,.3);border-radius:var(--radius-lg);padding:1.5rem 2rem;margin-bottom:2rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap">
+      <div style="font-size:3rem">🆓</div>
+      <div style="flex:1">
+        <div style="font-size:1.3rem;font-weight:900;color:var(--accent-green)">BOOST GRÁTIS DIÁRIO</div>
+        <p style="color:var(--text-secondary);margin-top:.25rem">Todo dia você pode ativar um boost gratuito no seu servidor! Sem gastar pontos, sem cadastro de cartão. 100% grátis.</p>
+      </div>
+      <a href="dashboard.html" class="btn btn-success btn-lg">Ativar Boost Grátis →</a>
+    </div>
+
+    <!-- Saldo -->
+    <div class="card" style="margin-bottom:2rem;text-align:center;background:linear-gradient(135deg,rgba(212,160,23,.06),rgba(0,0,0,0))">
+      <div style="font-size:3.5rem;font-weight:900;background:linear-gradient(135deg,var(--accent-gold),#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text" id="pointBalance">—</div>
+      <div style="color:var(--text-muted);margin-top:.25rem">Seus Boost Points</div>
       <div id="loginPrompt" style="margin-top:1rem;display:none">
-        <button class="btn btn-primary" onclick="openModal('loginModal')">Login to earn points</button>
+        <p style="color:var(--text-muted);margin-bottom:1rem">Faça login para ver e acumular seus pontos</p>
+        <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="openModal('loginModal')">Entrar</button>
+          <button class="btn btn-secondary" onclick="openModal('registerModal')">Criar Conta (+20 pts)</button>
+        </div>
       </div>
     </div>
 
-    <!-- Ways to earn -->
-    <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem">💰 Ways to Earn</h2>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-bottom:2rem">
-      ${earnCard('📅', 'Daily Login', '+10–30 pts', 'Login every day. Streak bonus increases your reward!', 'daily_login')}
-      ${earnCard('🗳', 'Vote for Servers', '+5 pts each', 'Vote for any server once per day.', 'vote')}
-      ${earnCard('🖥️', 'Register a Server', '+20 pts', 'Add your CS 1.6 server to the platform.', 'register')}
-      ${earnCard('👥', 'Invite Friends', '+15 pts', 'Share your invite code. Earn per successful registration.', 'invite')}
+    <!-- Como ganhar -->
+    <h2 style="font-size:1.1rem;font-weight:800;margin-bottom:1rem">💰 Como Ganhar Pontos</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1rem;margin-bottom:2rem">
+      ${earnCard('📅', 'Login Diário', '+10–30 pts', 'Entre todo dia. Streak de login aumenta o bônus!', 'green')}
+      ${earnCard('🗳', 'Votar em Servidores', '+5 pts', 'Vote em qualquer servidor uma vez por dia.', 'blue')}
+      ${earnCard('🖥️', 'Cadastrar Servidor', '+20 pts', 'Adicione seu servidor CS 1.6 na plataforma.', 'red')}
+      ${earnCard('👥', 'Convidar Amigos', '+15 pts', 'Compartilhe seu código. Ganhe por cada amigo que entrar.', 'gold')}
     </div>
 
-    <!-- Tasks today -->
+    <!-- Tarefas de hoje -->
     <div id="tasksList"></div>
 
-    <!-- Spend on -->
-    <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem;margin-top:2rem">🎯 Spend Points On</h2>
+    <!-- Gastar pontos -->
+    <h2 style="font-size:1.1rem;font-weight:800;margin-bottom:1rem;margin-top:2rem">🎯 Usar Pontos Para</h2>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem">
-      ${spendCard('⭐', '24h Featured', '100 pts', 'Your server appears in the Featured section for 24 hours.')}
-      ${spendCard('🌟', '3-Day Featured', '250 pts', 'Stay featured for 72 hours. Big visibility boost!')}
-      ${spendCard('💫', '7-Day Featured', '500 pts', 'A full week at the top of the featured section.')}
+      ${spendCard('🆓', 'Boost Grátis', '0 pts/dia', 'Destaque diário gratuito para qualquer servidor seu!', 'success')}
+      ${spendCard('⭐', 'Destaque 24h', '100 pts', 'Servidor aparece na seção destaque por 24 horas.', 'gold')}
+      ${spendCard('🌟', 'Destaque 3 Dias', '250 pts', 'Fique em destaque por 72 horas com mais visibilidade!', 'gold')}
+      ${spendCard('💫', 'Destaque 7 Dias', '500 pts', 'Uma semana inteira no topo da seção destaque.', 'gold')}
     </div>
   </section>
 </div>
@@ -59,34 +76,46 @@
 <!-- Auth Modals -->
 <div class="modal-overlay" id="loginModal">
   <div class="modal">
-    <div class="modal-header"><h2 class="modal-title">🔑 Login</h2><button class="modal-close" onclick="closeModal('loginModal')">✕</button></div>
+    <div class="modal-header"><h2 class="modal-title">🔑 Entrar</h2><button class="modal-close" onclick="closeModal('loginModal')">✕</button></div>
     <form id="loginForm">
-      <div class="form-group"><label class="form-label">Email</label><input type="email" id="loginEmail" required></div>
-      <div class="form-group"><label class="form-label">Password</label><input type="password" id="loginPassword" required></div>
-      <button type="submit" class="btn btn-primary" style="width:100%">Login</button>
+      <div class="form-group"><label class="form-label">E-mail</label><input type="email" id="loginEmail" required></div>
+      <div class="form-group"><label class="form-label">Senha</label><input type="password" id="loginPassword" required></div>
+      <button type="submit" class="btn btn-primary" style="width:100%">Entrar</button>
     </form>
   </div>
 </div>
 <div class="modal-overlay" id="registerModal">
   <div class="modal">
-    <div class="modal-header"><h2 class="modal-title">📝 Register</h2><button class="modal-close" onclick="closeModal('registerModal')">✕</button></div>
+    <div class="modal-header"><h2 class="modal-title">📝 Criar Conta</h2><button class="modal-close" onclick="closeModal('registerModal')">✕</button></div>
     <form id="registerForm">
-      <div class="form-group"><label class="form-label">Username</label><input type="text" id="regUsername" required pattern="[a-zA-Z0-9_]{3,20}"></div>
-      <div class="form-group"><label class="form-label">Email</label><input type="email" id="regEmail" required></div>
-      <div class="form-group"><label class="form-label">Password</label><input type="password" id="regPassword" required minlength="6"></div>
-      <div class="form-group"><label class="form-label">Invite Code</label><input type="text" id="regInvite" style="text-transform:uppercase"></div>
-      <button type="submit" class="btn btn-primary" style="width:100%">Create Account (+20 pts)</button>
+      <div class="form-group"><label class="form-label">Usuário</label><input type="text" id="regUsername" required pattern="[a-zA-Z0-9_]{3,20}"></div>
+      <div class="form-group"><label class="form-label">E-mail</label><input type="email" id="regEmail" required></div>
+      <div class="form-group"><label class="form-label">Senha</label><input type="password" id="regPassword" required minlength="6"></div>
+      <div class="form-group"><label class="form-label">Código de Convite</label><input type="text" id="regInvite" style="text-transform:uppercase"></div>
+      <button type="submit" class="btn btn-primary" style="width:100%">Criar Conta (+20 pts) 🎉</button>
     </form>
   </div>
 </div>
 
 <script src="js/app.js"></script>
 <script>
-function earnCard(icon, title, pts, desc, id) {
-  return `<div class="card" id="earnCard_${id}"><div style="font-size:2rem;margin-bottom:.5rem">${icon}</div><div style="font-weight:700;margin-bottom:.25rem">${title}</div><div style="color:var(--accent-gold);font-weight:700;font-size:1.1rem;margin-bottom:.5rem">${pts}</div><p style="color:var(--text-muted);font-size:.85rem">${desc}</p></div>`;
+function earnCard(icon, title, pts, desc, color) {
+  const colors = {green:'var(--accent-green)',blue:'var(--accent-blue)',red:'var(--accent-red)',gold:'var(--accent-gold)'};
+  return `<div class="card boost-card"><div style="font-size:2.2rem;margin-bottom:.5rem">${icon}</div><div style="font-weight:800;margin-bottom:.25rem">${title}</div><div style="color:${colors[color]||'var(--accent-gold)'};font-weight:900;font-size:1.15rem;margin-bottom:.5rem">${pts}</div><p style="color:var(--text-muted);font-size:.85rem;line-height:1.5">${desc}</p></div>`;
 }
-function spendCard(icon, title, pts, desc) {
-  return `<div class="card"><div style="font-size:2rem;margin-bottom:.5rem">${icon}</div><div style="font-weight:700;margin-bottom:.25rem">${title}</div><div style="color:var(--offline);font-weight:700;margin-bottom:.5rem">${pts}</div><p style="color:var(--text-muted);font-size:.85rem">${desc}</p><a href="dashboard.html" class="btn btn-gold btn-sm" style="margin-top:.75rem;width:100%">Activate in Dashboard</a></div>`;
+function spendCard(icon, title, pts, desc, type) {
+  const cls = type==='success'?'btn-success':'btn-gold';
+  const free = pts==='0 pts/dia';
+  return `<div class="card boost-card ${free?'card-featured':''}">
+    <div style="font-size:2.2rem;margin-bottom:.5rem">${icon}</div>
+    <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.25rem">
+      <span style="font-weight:800">${title}</span>
+      ${free?'<span class="boost-free-tag">GRÁTIS</span>':''}
+    </div>
+    <div style="color:${type==='success'?'var(--accent-green)':'var(--offline)'};font-weight:900;margin-bottom:.5rem">${pts}</div>
+    <p style="color:var(--text-muted);font-size:.85rem;line-height:1.5;margin-bottom:.75rem">${desc}</p>
+    <a href="dashboard.html" class="btn ${cls} btn-sm" style="width:100%">${free?'🆓 Ativar Grátis':'⚡ Ativar no Painel'}</a>
+  </div>`;
 }
 
 async function loadPage() {
@@ -96,21 +125,22 @@ async function loadPage() {
     return;
   }
   try {
-    const me = await api.get('/auth/me');
-    document.getElementById('pointBalance').textContent = me.boost_points.toLocaleString() + ' pts';
-    const tasks = await api.get('/users/tasks');
+    const [me, tasks] = await Promise.all([api.get('/auth/me'), api.get('/users/tasks')]);
+    document.getElementById('pointBalance').textContent = me.boost_points.toLocaleString('pt-BR') + ' pts';
     document.getElementById('tasksList').innerHTML = `
-      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem">📋 Today's Tasks</h2>
+      <h2 style="font-size:1.1rem;font-weight:800;margin-bottom:1rem">📋 Tarefas de Hoje</h2>
       <div style="display:flex;flex-direction:column;gap:.75rem">
         ${(tasks.tasks||[]).map(t=>`
           <div class="card" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem">
-            <div><div style="font-weight:600">${escHtml(t.label)}</div><div style="color:var(--accent-gold);font-size:.88rem">+${t.points} pts</div></div>
-            ${t.done?'<span class="badge badge-online">✅ Done</span>':'<span class="badge badge-offline">Pending</span>'}
+            <div>
+              <div style="font-weight:700">${escHtml(t.label)}</div>
+              <div style="color:var(--accent-gold);font-size:.88rem;font-weight:700">+${t.points} pts</div>
+            </div>
+            ${t.done?'<span class="badge badge-online">✅ Concluído</span>':'<span class="badge badge-offline">⏳ Pendente</span>'}
           </div>`).join('')}
       </div>`;
   } catch {}
 }
-
 loadPage();
 </script>
 </body>

@@ -1,25 +1,27 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Browse CS 1.6 Servers — CS Booster</title>
-  <meta name="description" content="Browse all CS 1.6 servers. Filter by mod, country, players and more.">
+  <title>Lista de Servidores CS 1.6 — CS Booster BR</title>
+  <meta name="description" content="Encontre servidores CS 1.6 por mod, país e número de jogadores. Zombie Plague, Classic, JailBreak, Surf e mais.">
+  <meta name="keywords" content="servidores cs 1.6, lista servidores counter-strike, zombie plague server, jailbreak cs, surf cs 1.6">
+  <link rel="canonical" href="https://erenzp-booster.netlify.app/servers.html">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <nav class="navbar">
   <div class="navbar-inner">
-    <a href="/" class="navbar-logo"><span class="logo-icon">🎮</span>CS Booster</a>
+    <a href="/" class="navbar-logo"><span class="logo-icon">🎮</span>CS Booster BR</a>
     <ul class="navbar-nav">
-      <li><a href="/">Home</a></li>
-      <li><a href="servers.html" class="active">Servers</a></li>
+      <li><a href="/">Início</a></li>
+      <li><a href="servers.html" class="active">Servidores</a></li>
       <li><a href="ranking.html">Ranking</a></li>
-      <li><a href="earn-points.html">Earn Points</a></li>
+      <li><a href="earn-points.html">Ganhar Pontos</a></li>
       <li><a href="faq.html">FAQ</a></li>
     </ul>
     <div class="navbar-actions">
       <button class="btn-theme" id="themeToggle">☀️</button>
-      <a href="add-server.html" class="btn btn-primary btn-sm">+ Add Server</a>
+      <a href="add-server.html" class="btn btn-primary btn-sm">+ Adicionar</a>
       <div id="navActions"></div>
     </div>
     <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
@@ -29,37 +31,36 @@
 <div class="container">
   <section class="section">
     <div class="section-header">
-      <h1 class="section-title">📋 Server List</h1>
-      <span id="totalCount" style="color:var(--text-muted);font-size:.9rem"></span>
+      <h1 class="section-title">📋 Lista de Servidores CS 1.6</h1>
+      <span id="totalCount" style="color:var(--text-muted);font-size:.88rem"></span>
     </div>
 
-    <!-- Filters -->
     <div class="filter-bar">
-      <input type="text" id="searchInput" placeholder="🔍 Search by name, IP, tags..." style="min-width:220px" value="">
+      <input type="text" id="searchInput" placeholder="🔍 Buscar por nome, IP, tags..." style="min-width:220px" value="">
       <select id="filterMod">
-        <option value="">All Mods</option>
+        <option value="">Todos os Mods</option>
         <option>Classic</option><option>Deathmatch</option><option>JailBreak</option>
         <option>Zombie</option><option>Surf</option><option>Bhop</option>
         <option>Minigames</option><option>KnifeFight</option><option>GunGame</option>
         <option>BaseBuilder</option><option>Deathrun</option><option>Other</option>
       </select>
       <select id="filterStatus">
-        <option value="">All Status</option>
-        <option value="online">Online</option>
-        <option value="offline">Offline</option>
+        <option value="">Todos os Status</option>
+        <option value="online">🟢 Online</option>
+        <option value="offline">🔴 Offline</option>
       </select>
       <select id="filterSort">
-        <option value="votes">Most Voted</option>
-        <option value="players">Most Players</option>
-        <option value="ping">Best Ping</option>
-        <option value="newest">Newest</option>
-        <option value="featured">Featured</option>
-        <option value="views">Most Viewed</option>
+        <option value="votes">Mais Votados</option>
+        <option value="players">Mais Jogadores</option>
+        <option value="ping">Melhor Ping</option>
+        <option value="newest">Mais Novos</option>
+        <option value="featured">Destaque</option>
+        <option value="views">Mais Vistos</option>
       </select>
       <select id="filterCountry">
-        <option value="">All Countries</option>
+        <option value="">Todos os Países</option>
       </select>
-      <button class="btn btn-secondary btn-sm" onclick="resetFilters()">✕ Reset</button>
+      <button class="btn btn-secondary btn-sm" onclick="resetFilters()">✕ Limpar</button>
     </div>
 
     <div class="server-grid" id="serverGrid">
@@ -107,10 +108,10 @@ async function loadServers() {
     document.getElementById('totalCount').textContent = `${data.total} servers found`;
     grid.innerHTML = data.servers?.length
       ? data.servers.map((s,i) => buildServerCard(s, f.sort==='votes'?((f.page-1)*f.limit+i+1):null)).join('')
-      : '<div class="empty-state" style="grid-column:1/-1"><div class="icon">🔍</div><h3>No servers found</h3><p>Try different filters</p></div>';
+      : '<div class="empty-state" style="grid-column:1/-1"><div class="icon">🔍</div><h3>Nenhum servidor encontrado</h3><p>Tente outros filtros</p></div>';
     buildPagination(data.total, f.limit, f.page);
   } catch(e) {
-    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="icon">⚠️</div><h3>Cannot reach API</h3><p>Start the backend server</p></div>';
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="icon">⚠️</div><h3>API indisponível</h3><p>Aguarde um momento e tente novamente</p></div>';
   }
 }
 
@@ -119,10 +120,10 @@ function buildPagination(total, limit, page) {
   const el = document.getElementById('pagination');
   if (totalPages <= 1) { el.innerHTML = ''; return; }
   let html = '';
-  if (page > 1) html += `<button class="btn btn-secondary btn-sm" onclick="goPage(${page-1})">← Prev</button>`;
+  if (page > 1) html += `<button class="btn btn-secondary btn-sm" onclick="goPage(${page-1})">← Anterior</button>`;
   const start = Math.max(1, page-2), end = Math.min(totalPages, page+2);
   for (let i=start; i<=end; i++) html += `<button class="btn ${i===page?'btn-primary':'btn-secondary'} btn-sm" onclick="goPage(${i})">${i}</button>`;
-  if (page < totalPages) html += `<button class="btn btn-secondary btn-sm" onclick="goPage(${page+1})">Next →</button>`;
+  if (page < totalPages) html += `<button class="btn btn-secondary btn-sm" onclick="goPage(${page+1})">Próxima →</button>`;
   el.innerHTML = html;
 }
 
