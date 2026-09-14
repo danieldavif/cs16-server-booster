@@ -9,7 +9,7 @@ const fs = require('fs');
 require('./models/db');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 // Security headers
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
