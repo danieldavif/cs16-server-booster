@@ -76,6 +76,13 @@ router.put('/servers/:id/feature', (req, res) => {
   res.json({ success: true, featured_until: until });
 });
 
+router.delete('/servers/:id', (req, res) => {
+  const s = db.prepare('SELECT id FROM servers WHERE id=?').get(req.params.id);
+  if (!s) return res.status(404).json({ error: 'Servidor não encontrado' });
+  db.prepare('DELETE FROM servers WHERE id=?').run(req.params.id);
+  res.json({ success: true });
+});
+
 // Reports
 router.get('/reports', (req, res) => {
   const rows = db.prepare(`SELECT r.*, s.name as server_name, u.username as reporter_name FROM reports r LEFT JOIN servers s ON r.server_id=s.id LEFT JOIN users u ON r.reporter_id=u.id WHERE r.status='pending' ORDER BY r.created_at DESC LIMIT 50`).all();

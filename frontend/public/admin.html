@@ -53,9 +53,9 @@ async function loadAdminStats() {
 
       <!-- Tabs -->
       <div class="tabs" id="adminTabs">
-        <button class="tab-btn active" onclick="loadAdminTab('servers')">Servers</button>
-        <button class="tab-btn" onclick="loadAdminTab('users')">Users</button>
-        <button class="tab-btn" onclick="loadAdminTab('reports')">Reports ${stats.pendingReports>0?'🔴':''}</button>
+        <button class="tab-btn active" onclick="loadAdminTab('servers')">Servidores</button>
+        <button class="tab-btn" onclick="loadAdminTab('users')">Usuários</button>
+        <button class="tab-btn" onclick="loadAdminTab('reports')">Denúncias ${stats.pendingReports>0?'🔴':''}</button>
         <button class="tab-btn" onclick="loadAdminTab('logs')">Logs</button>
       </div>
       <div id="adminTabContent"><div class="loading-overlay"><div class="spinner"></div></div></div>`;
@@ -67,6 +67,7 @@ async function loadAdminStats() {
 }
 
 async function loadAdminTab(tab) {
+  _currentAdminTab = tab;
   document.querySelectorAll('#adminTabs .tab-btn').forEach((b,i) => b.classList.toggle('active', ['servers','users','reports','logs'][i]===tab));
   const el = document.getElementById('adminTabContent');
   el.innerHTML = '<div class="loading-overlay"><div class="spinner"></div></div>';
@@ -74,14 +75,14 @@ async function loadAdminTab(tab) {
     if (tab === 'servers') {
       const data = await api.get('/admin/servers?limit=30');
       el.innerHTML = `<div class="table-wrapper"><table>
-        <thead><tr><th>Server</th><th>Owner</th><th>Status</th><th>Verified</th><th>Actions</th></tr></thead>
+        <thead><tr><th>Servidor</th><th>Dono</th><th>Status</th><th>Verificado</th><th>Ações</th></tr></thead>
         <tbody>${(data.servers||[]).map(s=>`<tr>
           <td><a href="server.html?s=${s.slug}" target="_blank" style="font-weight:600">${escHtml(s.name)}</a><br><small style="font-family:monospace;color:var(--text-muted)">${s.ip}:${s.port}</small></td>
           <td>${escHtml(s.owner_username||'—')}</td>
-          <td><span class="badge ${s.status==='online'?'badge-online':'badge-offline'}">${s.status}</span></td>
+          <td><span class="badge ${s.status==='online'?'badge-online':'badge-offline'}">${s.status==='online'?'Online':'Offline'}</span></td>
           <td>${s.is_verified?'✅':'⏳'}</td>
           <td style="display:flex;gap:.4rem;flex-wrap:wrap">
-            ${!s.is_verified?`<button class="btn btn-success btn-sm" onclick="adminAction('/admin/servers/${s.id}/approve','PUT',{})">✅ Verify</button>`:''}
+            ${!s.is_verified?`<button class="btn btn-success btn-sm" onclick="adminAction('/admin/servers/${s.id}/approve','PUT',{})">✅ Verificar</button>`:''}
             ${s.is_active?`<button class="btn btn-danger btn-sm" onclick="adminAction('/admin/servers/${s.id}/block','PUT',{})">🚫 Bloquear</button>`:`<button class="btn btn-success btn-sm" onclick="adminAction('/admin/servers/${s.id}/approve','PUT',{})">✅ Restaurar</button>`}
             <button class="btn btn-gold btn-sm" onclick="adminFeature('${s.id}')">⭐ Destacar</button>
             <button class="btn btn-danger btn-sm" style="background:rgba(239,68,68,.2);border:1px solid var(--offline)" onclick="adminDelete('${s.id}','${escHtml(s.name).replace(/'/g,"\\'")}')">🗑 Deletar</button>
@@ -91,33 +92,33 @@ async function loadAdminTab(tab) {
     } else if (tab === 'users') {
       const data = await api.get('/admin/users');
       el.innerHTML = `<div class="table-wrapper"><table>
-        <thead><tr><th>User</th><th>Role</th><th>Points</th><th>Status</th><th>Actions</th></tr></thead>
+        <thead><tr><th>Usuário</th><th>Cargo</th><th>Pontos</th><th>Status</th><th>Ações</th></tr></thead>
         <tbody>${(data.users||[]).map(u=>`<tr>
           <td><strong>${escHtml(u.username)}</strong><br><small style="color:var(--text-muted)">${escHtml(u.email)}</small></td>
-          <td><span class="badge ${u.role==='admin'?'badge-verified':'badge-mod'}">${u.role}</span></td>
+          <td><span class="badge ${u.role==='admin'?'badge-verified':'badge-mod'}">${u.role==='admin'?'Admin':'Mod'}</span></td>
           <td style="color:var(--accent-gold)">⚡ ${u.boost_points}</td>
-          <td>${u.is_banned?'<span class="badge badge-offline">Banned</span>':'<span class="badge badge-online">Active</span>'}</td>
+          <td>${u.is_banned?'<span class="badge badge-offline">Banido</span>':'<span class="badge badge-online">Ativo</span>'}</td>
           <td style="display:flex;gap:.4rem;flex-wrap:wrap">
-            ${u.is_banned?`<button class="btn btn-success btn-sm" onclick="adminAction('/admin/users/${u.id}/unban','PUT',{})">✅ Unban</button>`:`<button class="btn btn-danger btn-sm" onclick="banUser('${u.id}')">🚫 Ban</button>`}
+            ${u.is_banned?`<button class="btn btn-success btn-sm" onclick="adminAction('/admin/users/${u.id}/unban','PUT',{})">✅ Desbanir</button>`:`<button class="btn btn-danger btn-sm" onclick="banUser('${u.id}')">🚫 Banir</button>`}
           </td>
         </tr>`).join('')}
         </tbody></table></div>`;
     } else if (tab === 'reports') {
       const rows = await api.get('/admin/reports');
       el.innerHTML = `<div class="table-wrapper"><table>
-        <thead><tr><th>Server</th><th>Reporter</th><th>Reason</th><th>Date</th><th></th></tr></thead>
+        <thead><tr><th>Servidor</th><th>Denunciante</th><th>Motivo</th><th>Data</th><th></th></tr></thead>
         <tbody>${(rows||[]).map(r=>`<tr>
           <td><a href="server.html?s=${r.server_id}" target="_blank">${escHtml(r.server_name||r.server_id)}</a></td>
           <td>${escHtml(r.reporter_name||r.reporter_ip||'—')}</td>
           <td>${escHtml(r.reason)}: ${escHtml(r.description||'')}</td>
           <td style="color:var(--text-muted);font-size:.82rem">${timeAgo(r.created_at)}</td>
-          <td><button class="btn btn-success btn-sm" onclick="adminAction('/admin/reports/${r.id}/resolve','PUT',{})">✅ Resolve</button></td>
-        </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted)">No pending reports</td></tr>'}
+          <td><button class="btn btn-success btn-sm" onclick="adminAction('/admin/reports/${r.id}/resolve','PUT',{})">✅ Resolver</button></td>
+        </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted)">Nenhuma denúncia pendente</td></tr>'}
         </tbody></table></div>`;
     } else if (tab === 'logs') {
       const rows = await api.get('/admin/logs');
       el.innerHTML = `<div class="table-wrapper"><table>
-        <thead><tr><th>Action</th><th>User</th><th>IP</th><th>Date</th></tr></thead>
+        <thead><tr><th>Ação</th><th>Usuário</th><th>IP</th><th>Data</th></tr></thead>
         <tbody>${(rows||[]).map(r=>`<tr>
           <td>${escHtml(r.action)}</td>
           <td>${escHtml(r.user_id||'—')}</td>
@@ -126,19 +127,22 @@ async function loadAdminTab(tab) {
         </tr>`).join('')}
         </tbody></table></div>`;
     }
-  } catch(e) { el.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><h3>Error: ${e.message}</h3></div>`; }
+  } catch(e) { el.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><h3>Erro: ${e.message}</h3></div>`; }
 }
+
+let _currentAdminTab = 'servers';
 
 async function adminAction(path, method, body) {
   try {
     await api.request(method, path, body);
-    toast('Done!','success');
+    toast('Ação realizada com sucesso!','success');
     loadAdminStats();
+    setTimeout(() => loadAdminTab(_currentAdminTab), 400);
   } catch(e) { toast(e.message,'error'); }
 }
 
 async function banUser(id) {
-  const reason = prompt('Ban reason:'); if (!reason) return;
+  const reason = prompt('Motivo do ban:'); if (!reason) return;
   await adminAction(`/admin/users/${id}/ban`,'PUT',{reason});
 }
 
@@ -149,8 +153,12 @@ async function adminFeature(id) {
 
 async function adminDelete(id, name) {
   if (!confirm(`⚠️ Deletar permanentemente "${name}"?\n\nEssa ação não pode ser desfeita.`)) return;
-  await adminAction(`/servers/${id}`,'DELETE',{});
-  toast('Servidor deletado!', 'success');
+  try {
+    await api.request('DELETE', `/admin/servers/${id}`, {});
+    toast('Servidor deletado!', 'success');
+    loadAdminStats();
+    setTimeout(() => loadAdminTab(_currentAdminTab), 400);
+  } catch(e) { toast(e.message,'error'); }
 }
 
 checkAdmin();
