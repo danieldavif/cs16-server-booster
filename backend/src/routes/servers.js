@@ -17,7 +17,7 @@ function buildSlug(name, ip) {
 // Check server before adding (preview)
 router.get('/check', async (req, res) => {
   const { ip, port = 27015 } = req.query;
-  if (!ip) return res.status(400).json({ error: 'IP required' });
+  if (!ip) return res.status(400).json({ error: 'IP obrigatório' });
   const result = await queryServer(ip, parseInt(port), 4000);
   res.json(result);
 });
@@ -70,7 +70,7 @@ router.get('/featured', (req, res) => {
 // Single server
 router.get('/:slug', optionalAuth, (req, res) => {
   const s = db.prepare(`SELECT s.*, u.username as owner_username FROM servers s LEFT JOIN users u ON s.owner_id = u.id WHERE (s.slug = ? OR s.id = ?) AND s.is_active=1`).get(req.params.slug, req.params.slug);
-  if (!s) return res.status(404).json({ error: 'Server not found' });
+  if (!s) return res.status(404).json({ error: 'Servidor não encontrado' });
   // View count
   db.prepare('UPDATE servers SET view_count = view_count + 1 WHERE id = ?').run(s.id);
   // Player history (last 24h)
@@ -84,14 +84,14 @@ router.get('/:slug', optionalAuth, (req, res) => {
 // Create server
 router.post('/', authMiddleware, async (req, res) => {
   const { name, ip, port = 27015, description, country, city, mod = 'Classic', max_players = 32, website, discord, steam_group, tags, version = '1.6' } = req.body;
-  if (!name || !ip) return res.status(400).json({ error: 'Name and IP required' });
-  if (!MODS.includes(mod)) return res.status(400).json({ error: 'Invalid mod' });
+  if (!name || !ip) return res.status(400).json({ error: 'Nome e IP são obrigatórios' });
+  if (!MODS.includes(mod)) return res.status(400).json({ error: 'Mod inválido' });
 
   const count = db.prepare('SELECT COUNT(*) as c FROM servers WHERE owner_id = ? AND is_active = 1').get(req.user.id);
-  if (count.c >= 10) return res.status(400).json({ error: 'Maximum 10 servers per user' });
+  if (count.c >= 10) return res.status(400).json({ error: 'Máximo de 10 servidores por usuário' });
 
   const exists = db.prepare('SELECT id FROM servers WHERE ip = ? AND port = ?').get(ip, parseInt(port));
-  if (exists) return res.status(409).json({ error: 'Server with this IP:PORT already registered' });
+  if (exists) return res.status(409).json({ error: 'Servidor com esse IP:PORTA já cadastrado' });
 
   // Validate server is reachable
   const queryResult = await queryServer(ip, parseInt(port), 4000);
@@ -131,7 +131,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
 // Refresh query
 router.post('/:id/refresh', optionalAuth, async (req, res) => {
   const s = db.prepare('SELECT id, ip, port FROM servers WHERE id = ? OR slug = ?').get(req.params.id, req.params.id);
-  if (!s) return res.status(404).json({ error: 'Not found' });
+  if (!s) return res.status(404).json({ error: 'Não encontrado' });
   const result = await queryServer(s.ip, s.port, 4000);
   db.prepare(`UPDATE servers SET status=?, current_players=?, current_map=?, ping=?, last_queried=datetime('now') WHERE id=?`).run(result.online ? 'online' : 'offline', result.players || 0, result.map || '', result.ping || 0, s.id);
   res.json(result);
@@ -140,8 +140,8 @@ router.post('/:id/refresh', optionalAuth, async (req, res) => {
 // Delete
 router.delete('/:id', authMiddleware, (req, res) => {
   const s = db.prepare('SELECT * FROM servers WHERE id = ?').get(req.params.id);
-  if (!s) return res.status(404).json({ error: 'Not found' });
-  if (s.owner_id !== req.user.id && req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+  if (!s) return res.status(404).json({ error: 'Não encontrado' });
+  if (s.owner_id !== req.user.id && req.user.role !== 'admin') return res.status(403).json({ error: 'Sem permissão' });
   db.prepare('UPDATE servers SET is_active = 0 WHERE id = ?').run(s.id);
   res.json({ success: true });
 });
@@ -173,9 +173,9 @@ router.get('/meta/ranking', (req, res) => {
 // Report
 router.post('/:id/report', optionalAuth, (req, res) => {
   const s = db.prepare('SELECT id FROM servers WHERE id = ? OR slug = ?').get(req.params.id, req.params.id);
-  if (!s) return res.status(404).json({ error: 'Not found' });
+  if (!s) return res.status(404).json({ error: 'Não encontrado' });
   const { reason, description } = req.body;
-  if (!reason) return res.status(400).json({ error: 'Reason required' });
+  if (!reason) return res.status(400).json({ error: 'Motivo obrigatório' });
   db.prepare('INSERT INTO reports (id, server_id, reporter_id, reporter_ip, reason, description) VALUES (?,?,?,?,?,?)').run(uuidv4(), s.id, req.user?.id || null, req.ip, reason, description || '');
   res.json({ success: true });
 });

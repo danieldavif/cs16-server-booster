@@ -18,12 +18,12 @@ function sign(user) {
 // Register
 router.post('/register', authLimiter, async (req, res) => {
   const { username, email, password, invite_code } = req.body;
-  if (!username || !email || !password) return res.status(400).json({ error: 'Missing fields' });
-  if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
-  if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) return res.status(400).json({ error: 'Username must be 3-20 alphanumeric chars' });
+  if (!username || !email || !password) return res.status(400).json({ error: 'Preencha todos os campos' });
+  if (password.length < 6) return res.status(400).json({ error: 'Senha deve ter pelo menos 6 caracteres' });
+  if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) return res.status(400).json({ error: 'Usuário deve ter 3-20 caracteres alfanuméricos' });
 
   const exists = db.prepare('SELECT id FROM users WHERE email = ? OR username = ?').get(email.toLowerCase(), username);
-  if (exists) return res.status(409).json({ error: 'Email or username already taken' });
+  if (exists) return res.status(409).json({ error: 'Email ou nome de usuário já cadastrado' });
 
   let invitedBy = null;
   if (invite_code) {
@@ -49,14 +49,14 @@ router.post('/register', authLimiter, async (req, res) => {
 // Login
 router.post('/login', authLimiter, async (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) return res.status(400).json({ error: 'Missing fields' });
+  if (!email || !password) return res.status(400).json({ error: 'Preencha todos os campos' });
 
   const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email.toLowerCase());
-  if (!user) return res.status(401).json({ error: 'Invalid credentials' });
-  if (user.is_banned) return res.status(403).json({ error: 'Account banned: ' + (user.ban_reason || '') });
+  if (!user) return res.status(401).json({ error: 'Email ou senha inválidos' });
+  if (user.is_banned) return res.status(403).json({ error: 'Conta banida: ' + (user.ban_reason || '') });
 
   const ok = await bcrypt.compare(password, user.password);
-  if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
+  if (!ok) return res.status(401).json({ error: 'Email ou senha inválidos' });
 
   // Daily login points
   const today = new Date().toISOString().split('T')[0];
@@ -82,11 +82,11 @@ router.get('/me', authMiddleware, (req, res) => {
 // Change password
 router.put('/password', authMiddleware, async (req, res) => {
   const { current_password, new_password } = req.body;
-  if (!current_password || !new_password) return res.status(400).json({ error: 'Missing fields' });
-  if (new_password.length < 6) return res.status(400).json({ error: 'Password too short' });
+  if (!current_password || !new_password) return res.status(400).json({ error: 'Preencha todos os campos' });
+  if (new_password.length < 6) return res.status(400).json({ error: 'Senha muito curta' });
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
   const ok = await bcrypt.compare(current_password, user.password);
-  if (!ok) return res.status(401).json({ error: 'Wrong current password' });
+  if (!ok) return res.status(401).json({ error: 'Senha atual incorreta' });
   const hash = await bcrypt.hash(new_password, 10);
   db.prepare('UPDATE users SET password = ? WHERE id = ?').run(hash, req.user.id);
   res.json({ success: true });

@@ -5,29 +5,29 @@ const db = require('../models/db');
 const { authMiddleware } = require('../middleware/auth');
 
 const BOOST_PRICES = {
-  daily_free: { points: 0, duration_h: 24, label: 'Free Daily Boost' },
-  featured_24h: { points: 100, duration_h: 24, label: '24h Featured' },
-  featured_72h: { points: 250, duration_h: 72, label: '3-Day Featured' },
-  featured_7d: { points: 500, duration_h: 168, label: '7-Day Featured' },
+  daily_free: { points: 0, duration_h: 24, label: 'Boost Grátis Diário' },
+  featured_24h: { points: 100, duration_h: 24, label: '24h em Destaque' },
+  featured_72h: { points: 250, duration_h: 72, label: '3 Dias em Destaque' },
+  featured_7d: { points: 500, duration_h: 168, label: '7 Dias em Destaque' },
 };
 
 // Activate boost
 router.post('/activate', authMiddleware, (req, res) => {
   const { server_id, boost_type } = req.body;
   const plan = BOOST_PRICES[boost_type];
-  if (!plan) return res.status(400).json({ error: 'Invalid boost type' });
+  if (!plan) return res.status(400).json({ error: 'Tipo de boost inválido' });
 
   const server = db.prepare('SELECT * FROM servers WHERE id = ? AND owner_id = ? AND is_active = 1').get(server_id, req.user.id);
-  if (!server) return res.status(404).json({ error: 'Server not found or not yours' });
+  if (!server) return res.status(404).json({ error: 'Servidor não encontrado ou não é seu' });
 
   // Daily free boost: once per server per day
   if (boost_type === 'daily_free') {
     const today = new Date().toISOString().split('T')[0];
     const used = db.prepare("SELECT id FROM boost_history WHERE server_id = ? AND boost_type = 'daily_free' AND created_at >= date('now')").get(server_id);
-    if (used) return res.status(429).json({ error: 'Daily free boost already used today' });
+    if (used) return res.status(429).json({ error: 'Boost grátis já utilizado hoje. Volte amanhã!' });
   } else {
     const user = db.prepare('SELECT boost_points FROM users WHERE id = ?').get(req.user.id);
-    if (user.boost_points < plan.points) return res.status(400).json({ error: `Not enough Boost Points. Need ${plan.points}, have ${user.boost_points}` });
+    if (user.boost_points < plan.points) return res.status(400).json({ error: `Pontos insuficientes. Necessário: ${plan.points}, você tem: ${user.boost_points}` });
     db.prepare('UPDATE users SET boost_points = boost_points - ? WHERE id = ?').run(plan.points, req.user.id);
     db.prepare('INSERT INTO point_transactions (id, user_id, amount, type, description, reference_id) VALUES (?,?,?,?,?,?)').run(uuidv4(), req.user.id, -plan.points, 'boost_spent', plan.label, server_id);
   }
@@ -49,7 +49,7 @@ router.post('/activate', authMiddleware, (req, res) => {
 // Boost history for a server
 router.get('/history/:serverId', authMiddleware, (req, res) => {
   const s = db.prepare('SELECT id FROM servers WHERE id = ? AND owner_id = ?').get(req.params.serverId, req.user.id);
-  if (!s) return res.status(404).json({ error: 'Not found' });
+  if (!s) return res.status(404).json({ error: 'Não encontrado' });
   const rows = db.prepare('SELECT * FROM boost_history WHERE server_id = ? ORDER BY created_at DESC LIMIT 50').all(s.id);
   res.json(rows);
 });
