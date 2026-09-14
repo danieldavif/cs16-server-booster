@@ -11,7 +11,9 @@
   <meta name="theme-color" content="#e02020">
   <link rel="stylesheet" href="css/style.css">
   <style>
-    /* Confetti animation */
+    /* Hide Netlify badge */
+    [data-netlify-badge], .netlify-badge, div[style*="netlify"] { display:none!important; }
+  </style>
     @keyframes confetti-fall { 0%{transform:translateY(-100px) rotate(0deg);opacity:1} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
     .confetti-piece { position:fixed;top:0;width:10px;height:10px;border-radius:2px;animation:confetti-fall 2s ease-in forwards;pointer-events:none;z-index:9999; }
     /* Pulse hero */
