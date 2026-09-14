@@ -1,16 +1,27 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Add Server — CS Booster</title>
+  <title>Adicionar Servidor — CS Booster BR</title>
+  <meta name="description" content="Adicione seu servidor CS 1.6 gratuitamente e aumente sua visibilidade.">
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    .query-status { display:flex;align-items:center;gap:.5rem;font-size:.85rem;margin-top:.5rem;min-height:1.5rem; }
+    .query-status.loading { color:var(--accent-gold); }
+    .query-status.success { color:var(--accent-green); }
+    .query-status.error { color:var(--offline); }
+    .auto-filled { border-color:var(--accent-green)!important;box-shadow:0 0 0 3px rgba(34,197,94,.15)!important; }
+    .step-badge { display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--accent-red);color:#fff;font-weight:800;font-size:.88rem;flex-shrink:0; }
+    .form-section { background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;margin-bottom:1.25rem; }
+    .form-section-title { display:flex;align-items:center;gap:.75rem;font-size:1rem;font-weight:700;margin-bottom:1.25rem; }
+  </style>
 </head>
 <body>
 <nav class="navbar">
   <div class="navbar-inner">
-    <a href="/" class="navbar-logo"><span class="logo-icon">🎮</span>CS Booster</a>
+    <a href="/" class="navbar-logo"><span class="logo-icon">🎮</span>CS Booster BR</a>
     <ul class="navbar-nav">
-      <li><a href="/">Home</a></li><li><a href="servers.html">Servers</a></li>
+      <li><a href="/">Início</a></li><li><a href="servers.html">Servidores</a></li>
       <li><a href="ranking.html">Ranking</a></li>
     </ul>
     <div class="navbar-actions">
@@ -21,114 +32,131 @@
   </div>
 </nav>
 
-<div class="container" style="max-width:680px">
+<div class="container" style="max-width:700px">
   <section class="section">
-    <div class="breadcrumb"><a href="/">Home</a><span class="breadcrumb-sep">›</span><span>Add Server</span></div>
-    <h1 class="section-title" style="margin-bottom:1.5rem">➕ Add Your CS 1.6 Server</h1>
-    <div style="background:rgba(224,32,32,.08);border:1px solid rgba(224,32,32,.25);border-radius:var(--radius);padding:1rem;margin-bottom:1.5rem;font-size:.9rem;color:var(--text-secondary)">
-      🎮 Your server will be automatically queried to verify it's online. Make sure it's running before submitting!<br>
-      ⚡ Get +20 Boost Points for registering a server.
-    </div>
+    <div class="breadcrumb"><a href="/">Início</a><span class="breadcrumb-sep">›</span><span>Adicionar Servidor</span></div>
+    <h1 class="section-title" style="margin-bottom:.5rem">➕ Adicionar Servidor CS 1.6</h1>
+    <p style="color:var(--text-muted);margin-bottom:1.5rem">Cadastre seu servidor gratuitamente e ganhe <span style="color:var(--accent-gold);font-weight:700">+20 Boost Points</span>!</p>
 
     <div id="loginWall" style="display:none;text-align:center;padding:3rem 1rem">
       <div style="font-size:3rem;margin-bottom:1rem">🔒</div>
-      <h3 style="margin-bottom:.5rem">Login Required</h3>
-      <p style="color:var(--text-muted);margin-bottom:1.5rem">You need an account to add a server.</p>
+      <h3 style="margin-bottom:.5rem">Login Necessário</h3>
+      <p style="color:var(--text-muted);margin-bottom:1.5rem">Você precisa de uma conta para adicionar um servidor.</p>
       <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
-        <button class="btn btn-primary" onclick="openModal('loginModal')">Login</button>
-        <button class="btn btn-secondary" onclick="openModal('registerModal')">Register</button>
+        <button class="btn btn-primary" onclick="openModal('loginModal')">Entrar</button>
+        <button class="btn btn-secondary" onclick="openModal('registerModal')">Criar Conta</button>
       </div>
     </div>
 
-    <form id="addServerForm" class="card">
-      <div class="form-row">
+    <form id="addServerForm">
+      <!-- Step 1: IP -->
+      <div class="form-section">
+        <div class="form-section-title"><span class="step-badge">1</span> Endereço do Servidor</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">IP do Servidor *</label>
+            <input type="text" id="sIp" placeholder="Ex: 143.14.179.187" required autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Porta *</label>
+            <input type="number" id="sPort" value="27015" min="1" max="65535" required>
+          </div>
+        </div>
+        <div class="query-status" id="queryStatus"></div>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnQuery" onclick="queryServerNow()" style="margin-top:.5rem">
+          🔍 Verificar Servidor
+        </button>
+      </div>
+
+      <!-- Step 2: Info (auto-filled) -->
+      <div class="form-section">
+        <div class="form-section-title"><span class="step-badge">2</span> Informações do Servidor</div>
         <div class="form-group">
-          <label class="form-label">IP Address *</label>
-          <input type="text" id="sIp" placeholder="e.g. 143.14.179.187" required>
+          <label class="form-label">Nome do Servidor *</label>
+          <input type="text" id="sName" placeholder="Ex: Zombie Plague VIP Brasil" required maxlength="80">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">País</label>
+            <select id="sCountry">
+              <option value="BR">🇧🇷 Brasil</option>
+              <option value="US">🇺🇸 EUA</option>
+              <option value="DE">🇩🇪 Alemanha</option>
+              <option value="FR">🇫🇷 França</option>
+              <option value="RU">🇷🇺 Rússia</option>
+              <option value="PL">🇵🇱 Polônia</option>
+              <option value="TR">🇹🇷 Turquia</option>
+              <option value="PT">🇵🇹 Portugal</option>
+              <option value="AR">🇦🇷 Argentina</option>
+              <option value="MX">🇲🇽 México</option>
+              <option value="CL">🇨🇱 Chile</option>
+              <option value="CO">🇨🇴 Colômbia</option>
+              <option value="ES">🇪🇸 Espanha</option>
+              <option value="Other">🌐 Outro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Cidade / Região</label>
+            <input type="text" id="sCity" placeholder="São Paulo" maxlength="60">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Mod *</label>
+            <select id="sMod" required>
+              <option value="Classic">Classic</option>
+              <option value="Deathmatch">Deathmatch</option>
+              <option value="JailBreak">JailBreak</option>
+              <option value="Zombie">Zombie Plague</option>
+              <option value="Surf">Surf</option>
+              <option value="Bhop">Bhop</option>
+              <option value="Minigames">Minigames</option>
+              <option value="KnifeFight">Knife Fight</option>
+              <option value="GunGame">Gun Game</option>
+              <option value="BaseBuilder">BaseBuilder</option>
+              <option value="Deathrun">Deathrun</option>
+              <option value="Other">Outro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Slots Máx.</label>
+            <input type="number" id="sMaxPlayers" value="32" min="2" max="64">
+            <div class="form-hint">Preenchido automaticamente ao verificar</div>
+          </div>
         </div>
         <div class="form-group">
-          <label class="form-label">Port *</label>
-          <input type="number" id="sPort" value="27015" min="1" max="65535" required>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Server Name *</label>
-        <input type="text" id="sName" placeholder="My Awesome CS Server" required maxlength="80">
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Country</label>
-          <select id="sCountry">
-            <option value="">Select country...</option>
-            <option value="BR">🇧🇷 Brazil</option>
-            <option value="US">🇺🇸 United States</option>
-            <option value="DE">🇩🇪 Germany</option>
-            <option value="FR">🇫🇷 France</option>
-            <option value="RU">🇷🇺 Russia</option>
-            <option value="PL">🇵🇱 Poland</option>
-            <option value="TR">🇹🇷 Turkey</option>
-            <option value="PT">🇵🇹 Portugal</option>
-            <option value="AR">🇦🇷 Argentina</option>
-            <option value="MX">🇲🇽 Mexico</option>
-            <option value="CL">🇨🇱 Chile</option>
-            <option value="CO">🇨🇴 Colombia</option>
-            <option value="ES">🇪🇸 Spain</option>
-            <option value="Other">🌐 Other</option>
-          </select>
+          <label class="form-label">Descrição</label>
+          <textarea id="sDesc" rows="3" placeholder="Conte sobre seu servidor, recursos, regras..." maxlength="500"></textarea>
         </div>
         <div class="form-group">
-          <label class="form-label">City / Region</label>
-          <input type="text" id="sCity" placeholder="São Paulo" maxlength="60">
+          <label class="form-label">Tags <span style="color:var(--text-muted)">(separadas por vírgula)</span></label>
+          <input type="text" id="sTags" placeholder="zombie, vip, brasil, 24h" maxlength="120">
         </div>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Mod *</label>
-          <select id="sMod" required>
-            <option value="Classic">Classic</option>
-            <option value="Deathmatch">Deathmatch</option>
-            <option value="JailBreak">JailBreak</option>
-            <option value="Zombie">Zombie Plague</option>
-            <option value="Surf">Surf</option>
-            <option value="Bhop">Bhop</option>
-            <option value="Minigames">Minigames</option>
-            <option value="KnifeFight">Knife Fight</option>
-            <option value="GunGame">Gun Game</option>
-            <option value="BaseBuilder">BaseBuilder</option>
-            <option value="Deathrun">Deathrun</option>
-            <option value="Other">Other</option>
-          </select>
+
+      <!-- Step 3: Links -->
+      <div class="form-section">
+        <div class="form-section-title"><span class="step-badge">3</span> Links e Redes Sociais <span style="color:var(--text-muted);font-size:.82rem;font-weight:400">(opcional)</span></div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Site</label>
+            <input type="url" id="sWebsite" placeholder="https://seusite.com.br">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Discord</label>
+            <input type="url" id="sDiscord" placeholder="https://discord.gg/...">
+          </div>
         </div>
         <div class="form-group">
-          <label class="form-label">Max Players</label>
-          <input type="number" id="sMaxPlayers" value="32" min="2" max="64">
+          <label class="form-label">Grupo Steam</label>
+          <input type="url" id="sSteam" placeholder="https://steamcommunity.com/groups/...">
         </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Description</label>
-        <textarea id="sDesc" rows="3" placeholder="Tell players about your server, features, rules..." maxlength="500"></textarea>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Tags <span style="color:var(--text-muted)">(comma separated)</span></label>
-        <input type="text" id="sTags" placeholder="zombie, fun, friendly, 24/7" maxlength="120">
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Website</label>
-          <input type="url" id="sWebsite" placeholder="https://yoursite.com">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Discord</label>
-          <input type="url" id="sDiscord" placeholder="https://discord.gg/...">
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Steam Group</label>
-        <input type="url" id="sSteam" placeholder="https://steamcommunity.com/groups/...">
-      </div>
-      <div id="addError" style="color:var(--offline);font-size:.88rem;margin-bottom:.75rem;display:none"></div>
+
+      <div id="addError" style="color:var(--offline);font-size:.88rem;margin-bottom:.75rem;display:none;padding:.75rem;background:rgba(239,68,68,.1);border-radius:var(--radius);border:1px solid rgba(239,68,68,.3)"></div>
+
       <button type="submit" class="btn btn-primary btn-lg" style="width:100%" id="addBtn">
-        🚀 Add Server & Verify (+20 pts)
+        🚀 Cadastrar Servidor (+20 pts)
       </button>
     </form>
   </section>
@@ -137,29 +165,33 @@
 <!-- Auth Modals -->
 <div class="modal-overlay" id="loginModal">
   <div class="modal">
-    <div class="modal-header"><h2 class="modal-title">🔑 Login</h2><button class="modal-close" onclick="closeModal('loginModal')">✕</button></div>
+    <div class="modal-header"><h2 class="modal-title">🔑 Entrar</h2><button class="modal-close" onclick="closeModal('loginModal')">✕</button></div>
     <form id="loginForm">
-      <div class="form-group"><label class="form-label">Email</label><input type="email" id="loginEmail" required></div>
-      <div class="form-group"><label class="form-label">Password</label><input type="password" id="loginPassword" required></div>
-      <button type="submit" class="btn btn-primary" style="width:100%">Login</button>
+      <div class="form-group"><label class="form-label">E-mail</label><input type="email" id="loginEmail" required></div>
+      <div class="form-group"><label class="form-label">Senha</label><input type="password" id="loginPassword" required></div>
+      <button type="submit" class="btn btn-primary" style="width:100%">Entrar</button>
+      <p style="text-align:center;margin-top:1rem;font-size:.88rem;color:var(--text-muted)">Não tem conta? <a href="#" onclick="closeModal('loginModal');openModal('registerModal')">Cadastre-se</a></p>
     </form>
   </div>
 </div>
 <div class="modal-overlay" id="registerModal">
   <div class="modal">
-    <div class="modal-header"><h2 class="modal-title">📝 Register</h2><button class="modal-close" onclick="closeModal('registerModal')">✕</button></div>
+    <div class="modal-header"><h2 class="modal-title">📝 Criar Conta</h2><button class="modal-close" onclick="closeModal('registerModal')">✕</button></div>
     <form id="registerForm">
-      <div class="form-group"><label class="form-label">Username</label><input type="text" id="regUsername" required pattern="[a-zA-Z0-9_]{3,20}"></div>
-      <div class="form-group"><label class="form-label">Email</label><input type="email" id="regEmail" required></div>
-      <div class="form-group"><label class="form-label">Password</label><input type="password" id="regPassword" required minlength="6"></div>
-      <div class="form-group"><label class="form-label">Invite Code</label><input type="text" id="regInvite" style="text-transform:uppercase"></div>
-      <button type="submit" class="btn btn-primary" style="width:100%">Create Account</button>
+      <div class="form-group"><label class="form-label">Usuário</label><input type="text" id="regUsername" required pattern="[a-zA-Z0-9_]{3,20}"></div>
+      <div class="form-group"><label class="form-label">E-mail</label><input type="email" id="regEmail" required></div>
+      <div class="form-group"><label class="form-label">Senha</label><input type="password" id="regPassword" required minlength="6"></div>
+      <div class="form-group"><label class="form-label">Código de Convite</label><input type="text" id="regInvite" style="text-transform:uppercase"></div>
+      <button type="submit" class="btn btn-primary" style="width:100%">Criar Conta (+20 pts)</button>
     </form>
   </div>
 </div>
 
 <script src="js/app.js"></script>
 <script>
+const API = 'https://cs16-server-booster-production.up.railway.app/api';
+let queryTimeout;
+
 document.addEventListener('DOMContentLoaded', () => {
   if (!auth.isLoggedIn()) {
     document.getElementById('addServerForm').style.display = 'none';
@@ -167,11 +199,50 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+// Auto-query after typing IP
+document.getElementById('sIp').addEventListener('input', () => {
+  clearTimeout(queryTimeout);
+  queryTimeout = setTimeout(queryServerNow, 1200);
+});
+document.getElementById('sPort').addEventListener('change', queryServerNow);
+
+async function queryServerNow() {
+  const ip = document.getElementById('sIp').value.trim();
+  const port = document.getElementById('sPort').value;
+  if (!ip || ip.length < 7) return;
+  const status = document.getElementById('queryStatus');
+  const btn = document.getElementById('btnQuery');
+  status.className = 'query-status loading';
+  status.innerHTML = '⏳ Consultando servidor...';
+  btn.disabled = true;
+  try {
+    const res = await fetch(`${API}/servers/query-preview?ip=${encodeURIComponent(ip)}&port=${port}`).then(r=>r.json()).catch(()=>null);
+    // Fallback: try refresh on a known server or use health
+    const data = await fetch(`${API}/servers`, { method: 'GET' }).then(()=>null).catch(()=>null);
+    // Since we don't have a preview endpoint, query via adding then deleting - instead use direct approach
+    // Try the A2S query directly via a temp endpoint
+    const qres = await fetch(`${API}/servers/check?ip=${encodeURIComponent(ip)}&port=${port}`).then(r=>r.json()).catch(()=>null);
+    if (qres && qres.online) {
+      if (qres.name) { document.getElementById('sName').value = qres.name; document.getElementById('sName').classList.add('auto-filled'); }
+      if (qres.maxPlayers) { document.getElementById('sMaxPlayers').value = qres.maxPlayers; document.getElementById('sMaxPlayers').classList.add('auto-filled'); }
+      status.className = 'query-status success';
+      status.innerHTML = `✅ Online — ${qres.players}/${qres.maxPlayers} jogadores — Mapa: ${qres.map} — Ping: ${qres.ping}ms`;
+    } else {
+      status.className = 'query-status error';
+      status.innerHTML = '⚠️ Servidor offline ou não respondeu (ainda pode cadastrar)';
+    }
+  } catch {
+    status.className = 'query-status error';
+    status.innerHTML = '⚠️ Não foi possível verificar agora';
+  }
+  btn.disabled = false;
+}
+
 document.getElementById('addServerForm').addEventListener('submit', async e => {
   e.preventDefault();
   const btn = document.getElementById('addBtn');
   const errEl = document.getElementById('addError');
-  btn.disabled = true; btn.textContent = '⏳ Validating server...'; errEl.style.display = 'none';
+  btn.disabled = true; btn.textContent = '⏳ Verificando servidor...'; errEl.style.display = 'none';
   try {
     const data = await api.post('/servers', {
       ip: document.getElementById('sIp').value.trim(),
@@ -187,11 +258,11 @@ document.getElementById('addServerForm').addEventListener('submit', async e => {
       discord: document.getElementById('sDiscord').value.trim(),
       steam_group: document.getElementById('sSteam').value.trim(),
     });
-    toast(`Server added! Status: ${data.status === 'online' ? '🟢 Online' : '🔴 Offline'}`, data.status==='online'?'success':'info');
+    toast(`Servidor cadastrado! Status: ${data.status === 'online' ? '🟢 Online' : '🔴 Offline'}`, data.status==='online'?'success':'info');
     setTimeout(() => window.location.href = `server.html?s=${data.slug}`, 1200);
   } catch(err) {
-    errEl.textContent = err.message; errEl.style.display = 'block';
-    btn.disabled = false; btn.textContent = '🚀 Add Server & Verify (+20 pts)';
+    errEl.textContent = '❌ ' + err.message; errEl.style.display = 'block';
+    btn.disabled = false; btn.textContent = '🚀 Cadastrar Servidor (+20 pts)';
   }
 });
 </script>

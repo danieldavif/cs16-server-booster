@@ -14,6 +14,14 @@ function buildSlug(name, ip) {
   return `${base}-${suffix}`;
 }
 
+// Check server before adding (preview)
+router.get('/check', async (req, res) => {
+  const { ip, port = 27015 } = req.query;
+  if (!ip) return res.status(400).json({ error: 'IP required' });
+  const result = await queryServer(ip, parseInt(port), 4000);
+  res.json(result);
+});
+
 // List / search servers
 router.get('/', optionalAuth, (req, res) => {
   const { page = 1, limit = 20, q, mod, country, status, sort = 'votes', min_players, max_players } = req.query;

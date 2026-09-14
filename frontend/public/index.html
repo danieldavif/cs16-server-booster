@@ -1,35 +1,54 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CS 1.6 Server Booster — Find & Boost Counter-Strike Servers</title>
-  <meta name="description" content="Discover, list and boost Counter-Strike 1.6 servers. Real-time stats, ranking, votes and free daily boosts.">
-  <meta property="og:title" content="CS 1.6 Server Booster">
-  <meta property="og:description" content="Find the best CS 1.6 servers. Vote, rank and boost your favorite servers.">
+  <title>CS Booster BR — Encontre e Divulgue Servidores Counter-Strike 1.6</title>
+  <meta name="description" content="Descubra, liste e impulsione servidores de Counter-Strike 1.6. Estatísticas em tempo real, ranking, votos e boosts gratuitos.">
+  <meta property="og:title" content="CS Booster BR — Servidores CS 1.6">
+  <meta property="og:description" content="Encontre os melhores servidores CS 1.6. Vote, classifique e impulsione seu servidor favorito.">
   <meta property="og:type" content="website">
   <meta name="theme-color" content="#e02020">
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Confetti animation */
+    @keyframes confetti-fall { 0%{transform:translateY(-100px) rotate(0deg);opacity:1} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
+    .confetti-piece { position:fixed;top:0;width:10px;height:10px;border-radius:2px;animation:confetti-fall 2s ease-in forwards;pointer-events:none;z-index:9999; }
+    /* Pulse hero */
+    .hero-bg-pulse { position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(224,32,32,.18) 0%,transparent 70%);animation:bgpulse 4s ease-in-out infinite; pointer-events:none; }
+    @keyframes bgpulse { 0%,100%{opacity:.6} 50%{opacity:1} }
+    /* Server card hover glow */
+    .server-card:hover { box-shadow:0 0 30px rgba(224,32,32,.3),0 8px 32px rgba(0,0,0,.5); }
+    /* Online pulse dot */
+    @keyframes ping { 75%,100%{transform:scale(2);opacity:0} }
+    .ping-dot { position:relative;display:inline-flex }
+    .ping-dot::after { content:'';position:absolute;inset:0;border-radius:50%;background:var(--online);animation:ping 1.5s cubic-bezier(0,0,.2,1) infinite; }
+    /* Stats counter animation */
+    .stat-counter { display:inline-block;transition:all .3s; }
+    /* Featured badge shimmer */
+    @keyframes shimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
+    .badge-featured { background:linear-gradient(90deg,rgba(212,160,23,.15),rgba(255,193,7,.3),rgba(212,160,23,.15));background-size:200% auto;animation:shimmer 2s linear infinite; }
+  </style>
 </head>
 <body>
 <!-- NAVBAR -->
 <nav class="navbar">
   <div class="navbar-inner">
-    <a href="/" class="navbar-logo"><span class="logo-icon">🎮</span>CS Booster</a>
+    <a href="/" class="navbar-logo"><span class="logo-icon">🎮</span>CS Booster BR</a>
     <ul class="navbar-nav">
-      <li><a href="/" class="active">Home</a></li>
-      <li><a href="servers.html">Servers</a></li>
+      <li><a href="/" class="active">Início</a></li>
+      <li><a href="servers.html">Servidores</a></li>
       <li><a href="ranking.html">Ranking</a></li>
-      <li><a href="earn-points.html">Earn Points</a></li>
+      <li><a href="earn-points.html">Ganhar Pontos</a></li>
       <li><a href="faq.html">FAQ</a></li>
     </ul>
     <div class="navbar-actions">
       <div class="navbar-search">
         <span class="search-icon">🔍</span>
-        <input type="text" id="globalSearch" placeholder="Search servers..." autocomplete="off">
+        <input type="text" id="globalSearch" placeholder="Buscar servidores..." autocomplete="off">
       </div>
       <button class="btn-theme" id="themeToggle">☀️</button>
-      <a href="add-server.html" class="btn btn-primary btn-sm">+ Add Server</a>
+      <a href="add-server.html" class="btn btn-primary btn-sm">+ Adicionar</a>
       <div id="navActions"></div>
     </div>
     <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
@@ -38,83 +57,100 @@
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-content">
-    <h1 class="hero-title">🎮 CS 1.6 Server Booster</h1>
-    <p class="hero-subtitle">Discover, rank and boost the best Counter-Strike 1.6 servers worldwide</p>
+  <div class="hero-bg-pulse"></div>
+  <div class="hero-content" style="position:relative;z-index:1">
+    <div style="font-size:.85rem;color:var(--accent-gold);font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.75rem">🇧🇷 A maior plataforma de servidores CS 1.6</div>
+    <h1 class="hero-title">🎮 CS Booster BR</h1>
+    <p class="hero-subtitle">Descubra, vote e impulsione os melhores servidores de<br>Counter-Strike 1.6 do Brasil e do mundo</p>
     <div class="hero-actions">
-      <a href="add-server.html" class="btn btn-primary btn-lg">➕ Add Your Server</a>
-      <a href="servers.html" class="btn btn-secondary btn-lg">📋 Browse Servers</a>
+      <a href="add-server.html" class="btn btn-primary btn-lg">➕ Adicionar Servidor</a>
+      <a href="servers.html" class="btn btn-secondary btn-lg">📋 Ver Servidores</a>
       <a href="ranking.html" class="btn btn-gold btn-lg">🏆 Ranking</a>
     </div>
     <div class="hero-stats">
-      <div class="hero-stat"><div class="hero-stat-value" id="statServers">—</div><div class="hero-stat-label">Servers</div></div>
-      <div class="hero-stat"><div class="hero-stat-value" id="statOnline">—</div><div class="hero-stat-label">Online Now</div></div>
-      <div class="hero-stat"><div class="hero-stat-value" id="statPlayers">—</div><div class="hero-stat-label">Players Online</div></div>
-      <div class="hero-stat"><div class="hero-stat-value" id="statVotes">—</div><div class="hero-stat-label">Total Votes</div></div>
+      <div class="hero-stat">
+        <div class="hero-stat-value stat-counter" id="statServers">—</div>
+        <div class="hero-stat-label">Servidores</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value stat-counter" id="statOnline" style="color:var(--accent-green)">—</div>
+        <div class="hero-stat-label">Online Agora</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value stat-counter" id="statPlayers">—</div>
+        <div class="hero-stat-label">Jogadores Online</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value stat-counter" id="statVotes">—</div>
+        <div class="hero-stat-label">Votos Totais</div>
+      </div>
     </div>
   </div>
 </section>
 
 <div class="container">
-  <!-- FEATURED SERVERS -->
+  <!-- DESTAQUE -->
   <section class="section">
     <div class="section-header">
-      <h2 class="section-title"><span class="icon">⭐</span> Featured Servers</h2>
-      <a href="servers.html?sort=featured" class="btn btn-secondary btn-sm">View all →</a>
+      <h2 class="section-title"><span class="icon">⭐</span> Servidores em Destaque</h2>
+      <a href="servers.html?sort=featured" class="btn btn-secondary btn-sm">Ver todos →</a>
     </div>
     <div class="server-grid" id="featuredGrid">
       <div class="loading-overlay"><div class="spinner"></div></div>
     </div>
   </section>
 
-  <!-- ONLINE SERVERS -->
+  <!-- ONLINE -->
   <section class="section">
     <div class="section-header">
-      <h2 class="section-title"><span class="icon" style="color:var(--online)">●</span> Servers Online</h2>
-      <a href="servers.html?status=online" class="btn btn-secondary btn-sm">View all →</a>
+      <h2 class="section-title">
+        <span class="ping-dot"><span class="status-dot online"></span></span>
+        <span style="margin-left:.5rem">Servidores Online</span>
+      </h2>
+      <a href="servers.html?status=online" class="btn btn-secondary btn-sm">Ver todos →</a>
     </div>
     <div class="server-grid" id="onlineGrid">
       <div class="loading-overlay"><div class="spinner"></div></div>
     </div>
   </section>
 
-  <!-- TOP VOTED -->
+  <!-- TOP VOTADOS -->
   <section class="section">
     <div class="section-header">
-      <h2 class="section-title"><span class="icon">🏆</span> Top Voted Servers</h2>
-      <a href="ranking.html" class="btn btn-secondary btn-sm">Full ranking →</a>
+      <h2 class="section-title"><span class="icon">🏆</span> Top Servidores Mais Votados</h2>
+      <a href="ranking.html" class="btn btn-secondary btn-sm">Ranking completo →</a>
     </div>
     <div class="table-wrapper">
       <table>
         <thead>
-          <tr><th>#</th><th>Server</th><th>Mod</th><th>Players</th><th>Votes</th><th>Status</th><th></th></tr>
+          <tr><th>#</th><th>Servidor</th><th>Mod</th><th>Jogadores</th><th>Votos</th><th>Status</th><th></th></tr>
         </thead>
         <tbody id="topVotedTable"><tr><td colspan="7" class="loading-overlay"><div class="spinner"></div></td></tr></tbody>
       </table>
     </div>
   </section>
 
-  <!-- RECENTLY ADDED -->
+  <!-- RECÉM ADICIONADOS -->
   <section class="section">
     <div class="section-header">
-      <h2 class="section-title"><span class="icon">🆕</span> Recently Added</h2>
+      <h2 class="section-title"><span class="icon">🆕</span> Recém Adicionados</h2>
     </div>
     <div class="server-grid" id="newestGrid"></div>
   </section>
 </div>
 
-<!-- AUTH MODALS -->
+<!-- MODAIS AUTH -->
 <div class="modal-overlay" id="loginModal">
   <div class="modal">
     <div class="modal-header">
-      <h2 class="modal-title">🔑 Login</h2>
+      <h2 class="modal-title">🔑 Entrar</h2>
       <button class="modal-close" onclick="closeModal('loginModal')">✕</button>
     </div>
     <form id="loginForm">
-      <div class="form-group"><label class="form-label">Email</label><input type="email" id="loginEmail" required placeholder="your@email.com"></div>
-      <div class="form-group"><label class="form-label">Password</label><input type="password" id="loginPassword" required placeholder="••••••••"></div>
-      <button type="submit" class="btn btn-primary" style="width:100%">Login</button>
-      <p style="text-align:center;margin-top:1rem;font-size:.88rem;color:var(--text-muted)">Don't have an account? <a href="#" onclick="closeModal('loginModal');openModal('registerModal')">Register</a></p>
+      <div class="form-group"><label class="form-label">E-mail</label><input type="email" id="loginEmail" required placeholder="seu@email.com"></div>
+      <div class="form-group"><label class="form-label">Senha</label><input type="password" id="loginPassword" required placeholder="••••••••"></div>
+      <button type="submit" class="btn btn-primary" style="width:100%">Entrar</button>
+      <p style="text-align:center;margin-top:1rem;font-size:.88rem;color:var(--text-muted)">Não tem conta? <a href="#" onclick="closeModal('loginModal');openModal('registerModal')">Cadastre-se</a></p>
     </form>
   </div>
 </div>
@@ -122,16 +158,15 @@
 <div class="modal-overlay" id="registerModal">
   <div class="modal">
     <div class="modal-header">
-      <h2 class="modal-title">📝 Create Account</h2>
+      <h2 class="modal-title">📝 Criar Conta</h2>
       <button class="modal-close" onclick="closeModal('registerModal')">✕</button>
     </div>
     <form id="registerForm">
-      <div class="form-group"><label class="form-label">Username</label><input type="text" id="regUsername" required placeholder="CoolPlayer123" pattern="[a-zA-Z0-9_]{3,20}"><div class="form-hint">3-20 letters, numbers or underscores</div></div>
-      <div class="form-group"><label class="form-label">Email</label><input type="email" id="regEmail" required placeholder="your@email.com"></div>
-      <div class="form-group"><label class="form-label">Password</label><input type="password" id="regPassword" required placeholder="Min 6 chars" minlength="6"></div>
-      <div class="form-group"><label class="form-label">Invite Code <span style="color:var(--text-muted)">(optional)</span></label><input type="text" id="regInvite" placeholder="XXXXXX" style="text-transform:uppercase"><div class="form-hint">Get +15 Boost Points for your inviter</div></div>
-      <button type="submit" class="btn btn-primary" style="width:100%">Create Account (+20 pts)</button>
-      <p style="text-align:center;margin-top:1rem;font-size:.88rem;color:var(--text-muted)">Already have an account? <a href="#" onclick="closeModal('registerModal');openModal('loginModal')">Login</a></p>
+      <div class="form-group"><label class="form-label">Usuário</label><input type="text" id="regUsername" required placeholder="SeuNick123" pattern="[a-zA-Z0-9_]{3,20}"><div class="form-hint">3-20 letras, números ou _</div></div>
+      <div class="form-group"><label class="form-label">E-mail</label><input type="email" id="regEmail" required placeholder="seu@email.com"></div>
+      <div class="form-group"><label class="form-label">Senha</label><input type="password" id="regPassword" required placeholder="Mín. 6 caracteres" minlength="6"></div>
+      <div class="form-group"><label class="form-label">Código de Convite <span style="color:var(--text-muted)">(opcional)</span></label><input type="text" id="regInvite" placeholder="XXXXXX" style="text-transform:uppercase"></div>
+      <button type="submit" class="btn btn-primary" style="width:100%">Criar Conta (+20 pts) 🎉</button>
     </form>
   </div>
 </div>
@@ -140,43 +175,81 @@
   <div class="footer-inner">
     <div class="footer-grid">
       <div>
-        <div class="navbar-logo" style="margin-bottom:.5rem">🎮 CS 1.6 Server Booster</div>
-        <p class="footer-brand-text">The best platform to discover, boost and rank Counter-Strike 1.6 servers. 100% free, no bots, no fake players.</p>
+        <div class="navbar-logo" style="margin-bottom:.5rem">🎮 CS Booster BR</div>
+        <p class="footer-brand-text">A maior plataforma para descobrir, impulsionar e rankear servidores Counter-Strike 1.6. 100% gratuito, sem bots, sem jogadores falsos.</p>
       </div>
       <div>
-        <div class="footer-title">Platform</div>
+        <div class="footer-title">Plataforma</div>
         <ul class="footer-links">
-          <li><a href="servers.html">Browse Servers</a></li>
+          <li><a href="servers.html">Ver Servidores</a></li>
           <li><a href="ranking.html">Ranking</a></li>
-          <li><a href="add-server.html">Add Server</a></li>
-          <li><a href="earn-points.html">Earn Points</a></li>
+          <li><a href="add-server.html">Adicionar Servidor</a></li>
+          <li><a href="earn-points.html">Ganhar Pontos</a></li>
         </ul>
       </div>
       <div>
-        <div class="footer-title">Info</div>
+        <div class="footer-title">Informações</div>
         <ul class="footer-links">
           <li><a href="faq.html">FAQ</a></li>
-          <li><a href="rules.html">Rules</a></li>
-          <li><a href="contact.html">Contact</a></li>
-          <li><a href="stats.html">Statistics</a></li>
+          <li><a href="rules.html">Regras</a></li>
+          <li><a href="contact.html">Contato</a></li>
+          <li><a href="stats.html">Estatísticas</a></li>
         </ul>
       </div>
       <div>
-        <div class="footer-title">Account</div>
+        <div class="footer-title">Conta</div>
         <ul class="footer-links">
-          <li><a href="#" onclick="openModal('loginModal')">Login</a></li>
-          <li><a href="#" onclick="openModal('registerModal')">Register</a></li>
-          <li><a href="dashboard.html">Dashboard</a></li>
+          <li><a href="#" onclick="openModal('loginModal')">Entrar</a></li>
+          <li><a href="#" onclick="openModal('registerModal')">Cadastrar</a></li>
+          <li><a href="dashboard.html">Painel</a></li>
         </ul>
       </div>
     </div>
-    <div class="footer-bottom">© 2024 CS 1.6 Server Booster. Made for the CS community. 100% Free. No fake players.</div>
+    <div class="footer-bottom">© 2024 CS Booster BR. Feito para a comunidade CS 1.6. 100% Gratuito. Sem jogadores falsos.</div>
   </div>
 </footer>
 
 <script src="js/app.js"></script>
 <script>
 const API = 'https://cs16-server-booster-production.up.railway.app/api';
+
+// PT-BR server card override
+function buildServerCardPTBR(s, rank) {
+  const fill = s.max_players > 0 ? Math.min((s.current_players / s.max_players) * 100, 100) : 0;
+  const online = s.status === 'online';
+  return `
+    <div class="card server-card ${s.is_featured ? 'card-featured' : ''}">
+      ${rank ? `<span class="server-rank">#${rank}</span>` : ''}
+      <div class="server-card-header">
+        <div class="server-logo">${s.logo ? `<img src="${API}/../uploads/${s.logo}" alt="">` : '🖥️'}</div>
+        <div>
+          <div class="server-name">${escHtml(s.name)}</div>
+          <div class="server-ip">${escHtml(s.ip)}:${s.port}</div>
+        </div>
+      </div>
+      <div class="server-badges">
+        <span class="badge ${online ? 'badge-online' : 'badge-offline'}"><span class="status-dot ${online?'online':'offline'}"></span>${online ? 'Online' : 'Offline'}</span>
+        <span class="badge badge-mod">${escHtml(s.mod)}</span>
+        ${s.is_featured ? '<span class="badge badge-featured">⭐ Destaque</span>' : ''}
+        ${s.is_verified ? '<span class="badge badge-verified">✔ Verificado</span>' : ''}
+        ${s.country ? `<span class="badge badge-mod">${countryFlag(s.country)} ${escHtml(s.country)}</span>` : ''}
+      </div>
+      <div class="server-meta">
+        <span>👥 ${s.current_players}/${s.max_players} jogadores</span>
+        <span>🗺 ${escHtml(s.current_map || '—')}</span>
+      </div>
+      <div class="server-players-bar"><div class="server-players-fill" style="width:${fill}%"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:.8rem;color:var(--text-muted);margin-top:.3rem">
+        <span>📊 ${s.vote_count} votos</span>
+        ${s.ping ? `<span>${s.ping}ms</span>` : ''}
+      </div>
+      <div class="server-actions" style="margin-top:.75rem">
+        <a href="server.html?s=${s.slug}" class="btn btn-primary btn-sm" style="flex:1">Ver Servidor</a>
+        <button class="btn btn-icon btn-sm" title="Copiar IP" onclick="copyToClipboard('${escHtml(s.ip)}:${s.port}', this)">📋</button>
+        <a href="steam://connect/${s.ip}:${s.port}" class="btn btn-secondary btn-sm" title="Conectar">🎮</a>
+      </div>
+    </div>`;
+}
 
 async function loadHome() {
   try {
@@ -185,53 +258,65 @@ async function loadHome() {
       fetch(`${API}/stats/global`).then(r=>r.json()),
     ]);
 
-    // Stats
-    document.getElementById('statServers').textContent = stats.totalServers?.toLocaleString() || 0;
-    document.getElementById('statOnline').textContent = stats.onlineServers?.toLocaleString() || 0;
-    document.getElementById('statPlayers').textContent = stats.totalPlayers?.toLocaleString() || 0;
-    document.getElementById('statVotes').textContent = stats.totalVotes?.toLocaleString() || 0;
+    // Stats com animação
+    animateCount('statServers', stats.totalServers || 0);
+    animateCount('statOnline', stats.onlineServers || 0);
+    animateCount('statPlayers', stats.totalPlayers || 0);
+    animateCount('statVotes', stats.totalVotes || 0);
 
-    // Featured
+    // Destaque
     const fGrid = document.getElementById('featuredGrid');
     fGrid.innerHTML = featured.featured?.length
-      ? featured.featured.map(s => buildServerCard(s)).join('')
-      : '<div class="empty-state"><div class="icon">⭐</div><h3>No featured servers yet</h3></div>';
+      ? featured.featured.map(s => buildServerCardPTBR(s)).join('')
+      : '<div class="empty-state" style="grid-column:1/-1"><div class="icon">⭐</div><h3>Nenhum servidor em destaque ainda</h3><p><a href="add-server.html">Seja o primeiro!</a></p></div>';
 
     // Online
     const oRes = await fetch(`${API}/servers?status=online&sort=players&limit=6`).then(r=>r.json());
     const oGrid = document.getElementById('onlineGrid');
     oGrid.innerHTML = oRes.servers?.length
-      ? oRes.servers.map(s => buildServerCard(s)).join('')
-      : '<div class="empty-state"><div class="icon">🟢</div><h3>No servers online right now</h3></div>';
+      ? oRes.servers.map(s => buildServerCardPTBR(s)).join('')
+      : '<div class="empty-state" style="grid-column:1/-1"><div class="icon">🟢</div><h3>Nenhum servidor online agora</h3></div>';
 
-    // Top voted table
+    // Top votados
     const tbody = document.getElementById('topVotedTable');
     tbody.innerHTML = (featured.topVoted||[]).map((s,i) => `
       <tr>
-        <td><span class="rank-number rank-${i+1}">#${i+1}</span></td>
+        <td><span class="rank-number rank-${i+1}">${i < 3 ? ['🥇','🥈','🥉'][i] : '#'+(i+1)}</span></td>
         <td><a href="server.html?s=${s.slug}" style="font-weight:600;color:var(--text-primary)">${escHtml(s.name)}</a><br><small style="color:var(--text-muted);font-family:monospace">${s.ip}:${s.port}</small></td>
         <td><span class="badge badge-mod">${escHtml(s.mod)}</span></td>
         <td>👥 ${s.current_players}/${s.max_players}</td>
-        <td>📊 ${s.vote_count}</td>
-        <td><span class="badge ${s.status==='online'?'badge-online':'badge-offline'}">${s.status}</span></td>
-        <td><a href="server.html?s=${s.slug}" class="btn btn-primary btn-sm">View</a></td>
-      </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:2rem">No servers yet. <a href="add-server.html">Add the first one!</a></td></tr>';
+        <td style="color:var(--accent-gold);font-weight:700">📊 ${s.vote_count}</td>
+        <td><span class="badge ${s.status==='online'?'badge-online':'badge-offline'}">${s.status==='online'?'🟢 Online':'🔴 Offline'}</span></td>
+        <td><a href="server.html?s=${s.slug}" class="btn btn-primary btn-sm">Ver</a></td>
+      </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:2rem">Nenhum servidor ainda. <a href="add-server.html">Adicione o primeiro!</a></td></tr>';
 
-    // Newest
-    document.getElementById('newestGrid').innerHTML = (featured.newest||[]).map(s => buildServerCard(s)).join('');
+    // Recém adicionados
+    document.getElementById('newestGrid').innerHTML = (featured.newest||[]).map(s => buildServerCardPTBR(s)).join('');
   } catch(e) {
     console.error(e);
-    document.getElementById('featuredGrid').innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><h3>API offline</h3><p>Start the backend: <code>npm start</code></p></div>';
+    document.getElementById('featuredGrid').innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="icon">⚠️</div><h3>API offline</h3><p>Aguarde um momento e recarregue a página</p></div>';
   }
 }
 
-// Global search
+function animateCount(id, target) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const duration = 1000, steps = 30;
+  let current = 0;
+  const increment = target / steps;
+  const timer = setInterval(() => {
+    current = Math.min(current + increment, target);
+    el.textContent = Math.floor(current).toLocaleString('pt-BR');
+    if (current >= target) clearInterval(timer);
+  }, duration / steps);
+}
+
+// Busca global
 document.getElementById('globalSearch')?.addEventListener('keydown', e => {
   if (e.key === 'Enter') window.location.href = `servers.html?q=${encodeURIComponent(e.target.value)}`;
 });
 
 loadHome();
-// Auto-refresh stats every 30s
 setInterval(loadHome, 30000);
 </script>
 </body>

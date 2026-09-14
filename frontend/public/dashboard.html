@@ -227,10 +227,23 @@ async function activateBoost(serverId, type, cost) {
   try {
     const data = await api.post('/boost/activate', { server_id: serverId, boost_type: type });
     closeModal('boostModal');
-    toast(`Boost activated! ${data.label} until ${new Date(data.expiresAt).toLocaleTimeString()}`, 'success');
+    toast(`🚀 Boost ativado! ${data.label} até ${new Date(data.expiresAt).toLocaleTimeString('pt-BR')}`, 'success');
+    launchConfetti();
     loadDashboard();
   } catch(err) { toast(err.message,'error'); }
 }
+
+function launchConfetti() {
+  const colors = ['#e02020','#d4a017','#ffc107','#22c55e','#3b82f6','#ffffff'];
+  for (let i = 0; i < 80; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.cssText = `left:${Math.random()*100}vw;background:${colors[Math.floor(Math.random()*colors.length)]};width:${6+Math.random()*10}px;height:${6+Math.random()*10}px;animation-duration:${1.5+Math.random()*1.5}s;animation-delay:${Math.random()*.5}s;border-radius:${Math.random()>.5?'50%':'2px'}`;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3000);
+  }
+}
+
 
 function generateBanner(id, name, ip, mod, votes) {
   const canvas = document.createElement('canvas');

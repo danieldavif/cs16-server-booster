@@ -82,8 +82,9 @@ async function loadAdminTab(tab) {
           <td>${s.is_verified?'✅':'⏳'}</td>
           <td style="display:flex;gap:.4rem;flex-wrap:wrap">
             ${!s.is_verified?`<button class="btn btn-success btn-sm" onclick="adminAction('/admin/servers/${s.id}/approve','PUT',{})">✅ Verify</button>`:''}
-            ${s.is_active?`<button class="btn btn-danger btn-sm" onclick="adminAction('/admin/servers/${s.id}/block','PUT',{})">🚫 Block</button>`:`<button class="btn btn-success btn-sm" onclick="adminAction('/admin/servers/${s.id}/approve','PUT',{})">✅ Restore</button>`}
-            <button class="btn btn-gold btn-sm" onclick="adminFeature('${s.id}')">⭐ Feature</button>
+            ${s.is_active?`<button class="btn btn-danger btn-sm" onclick="adminAction('/admin/servers/${s.id}/block','PUT',{})">🚫 Bloquear</button>`:`<button class="btn btn-success btn-sm" onclick="adminAction('/admin/servers/${s.id}/approve','PUT',{})">✅ Restaurar</button>`}
+            <button class="btn btn-gold btn-sm" onclick="adminFeature('${s.id}')">⭐ Destacar</button>
+            <button class="btn btn-danger btn-sm" style="background:rgba(239,68,68,.2);border:1px solid var(--offline)" onclick="adminDelete('${s.id}','${escHtml(s.name).replace(/'/g,"\\'")}')">🗑 Deletar</button>
           </td>
         </tr>`).join('')}
         </tbody></table></div>`;
@@ -142,8 +143,14 @@ async function banUser(id) {
 }
 
 async function adminFeature(id) {
-  const h = prompt('Feature for how many hours? (e.g. 24, 72, 168)','24'); if (!h) return;
+  const h = prompt('Destacar por quantas horas? (ex: 24, 72, 168)','24'); if (!h) return;
   await adminAction(`/admin/servers/${id}/feature`,'PUT',{hours:parseInt(h)});
+}
+
+async function adminDelete(id, name) {
+  if (!confirm(`⚠️ Deletar permanentemente "${name}"?\n\nEssa ação não pode ser desfeita.`)) return;
+  await adminAction(`/servers/${id}`,'DELETE',{});
+  toast('Servidor deletado!', 'success');
 }
 
 checkAdmin();
